@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="original.cpp">
+    <ClCompile Include="logic_error.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
