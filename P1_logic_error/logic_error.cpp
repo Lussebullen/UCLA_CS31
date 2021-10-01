@@ -17,7 +17,7 @@ int main()
 	cout << "How many of them would rather do school from home? ";
 	cin >> likeAtHome;
 
-	double pctLikeInPerson = 100.0 * likeInPerson / numberSurveyed;
+	double pctLikeInPerson = 100.0 * numberSurveyed / likeInPerson; //Inverted fraction
 	double pctLikeAtHome = 100.0 * likeAtHome / numberSurveyed;
 
 	cout.setf(ios::fixed);
@@ -27,7 +27,7 @@ int main()
 	cout << pctLikeInPerson << "% prefer being at school in person." << endl;
 	cout << pctLikeAtHome << "% prefer doing school from home." << endl;
 
-	if (likeInPerson > likeAtHome)
+	if (likeInPerson < likeAtHome) //Swapped inequality
 		cout << "More students like being at school in person than doing school at home." << endl;
 	else
 		cout << "More students like doing school from home than being at school in person." << endl;
