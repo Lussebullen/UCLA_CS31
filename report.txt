@@ -1,0 +1,41 @@
+Original:
+2,1,1  -> 50%/50% distribution
+Nothing explicitly wrong, but the output claims one is larger than the other. Which would be wrong assuming the semantics suggest a strict inequality.
+
+0,10,10 -> inf% prefer school in person and school from home.
+Div by 0 error results in inf value. 
+
+1,2,-2 -> 200% prefer school in person and -200% from home.
+Negatives accepted, and arithmetic operations are still carried out as one would suspect, seeing as there are no further restrictions on the input other than integer values.
+
+2147483648, N/A, N/A -> Apparently directly skips the other two inputs and result in a -40%/-40% distribution.
+Value too large to store in integer type, as far as I gather its called integer overflow.
+
+Logic error:
+Line 20, I inverted the fraction, meaning if the inputs are reasonable pctLikeInPerson will be 100% or greater.
+Line 30, I reversed the inequality, meaning the output conclusion will be wrong.
+
+10,4,6 -> 250% prefer in person, 60% prefer school from home, more students prefer in person.
+Only the 60% prefer school from home part is true. 
+
+Compilation error:
+Line 7 remove main method -> C2447 missing function header
+Main method is required to run the executable, if I remember correctly you said it is because the main method is the very first method being run in the
+accumulator, so if it isnt there the computer doesnt know where to start the programme. Although I do not know for sure if this is how it works - 
+I know that you said the main method is required, so I figured it must fail to compile without. 
+
+Line 10,11,12 remove variable declarations -> C2065 undeclared identifier
+C++ cannot assign values to undeclared variables, thus throws the above error.
+
+Line 15 remove semicolon -> C2146 syntax error: missing ";"
+Since c++ is strongly typed we need to specify the end of the "line", or command/instruction, not sure what to call it. 
+But every separate instruction should be separated by ";".
+
+Line 21 remove double -> C2065 same as the first error, but this time just because I removed the type declaration, the variable is neither declared nor initialized.
+
+Line 31 remove parenthesis -> syntax error + C2181 illegal else without matching if. 
+Since the parameter is no longer registered for the if statement the syntax for if statement is wrong, and only the else part is registered.
+
+
+When all errors exist at the same time only the first is encountered before the compilation fails.
+
