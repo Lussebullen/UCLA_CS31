@@ -21,9 +21,6 @@ int main() {
 	double rateMidNonWinter = 0.21;
 	double rateLong = 0.17;
 
-	// Declaration of own variables
-	double amount = 0;
-
 	// Input section
 	cout << "Odometer at start: ";
 	cin >> ODO_START;
@@ -38,6 +35,10 @@ int main() {
 	cin >> LUXURY;
 	cout << "Month (1=Jan, 2=Feb, etc.): ";
 	cin >> MONTH;
+
+	// Declaration of own variables
+	double amount = 0;
+	int dist = ODO_END - ODO_START;
 
 	//Output section
 	if (ODO_START < 0) {
@@ -60,15 +61,45 @@ int main() {
 		cout << "---" << endl;
 		cout << "You must enter y or n." << endl;
 	}
-	else if (MONTH<1 || MONTH>12) {
+	else if (MONTH<1 || MONTH>12) { //What if MONTH is a decimal number?
 		cout << "---" << endl;
 		cout << "The month number must be in the range 1 through 12." << endl;
 	}
 	else {
+		//Computation
+		
+		//Base
+		if (LUXURY=="y") {
+			amount += DAYS * dailyLux;
+		}
+		else {
+			amount += DAYS * dailyBase;
+		}
+		//Mile charge
+		if (dist<=100) {
+			amount += dist * rateInit;
+		}
+		else if (dist>100 && dist <= 500) {
+			amount += 100 * rateInit;
+			if (3 < MONTH < 12) {
+				amount += (dist - 100) * rateMidNonWinter;
+			}
+			else {
+				amount += (dist - 100) * rateInit;
+			}
+		}
+		else {
+			amount += 100 * rateInit;
+			if (3 < MONTH < 12) {
+				amount += 400 * rateMidNonWinter;
+			}
+			else {
+				amount += 400 * rateInit;
+			}
+			amount += (dist - 500) * rateLong;
+		}
+
 		cout << "---" << endl;
-		cout << "The rental charge for customer is $" << amount << endl;
+		cout << "The rental charge for " << NAME << " is $" << amount << endl;
 	}
-
-	
-
 }
