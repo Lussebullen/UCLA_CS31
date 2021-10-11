@@ -81,7 +81,7 @@ int main() {
 		}
 		else if (dist>100 && dist <= 500) {
 			amount += 100 * rateInit;
-			if (3 < MONTH < 12) {
+			if (3 < MONTH && MONTH < 12) {
 				amount += (dist - 100) * rateMidNonWinter;
 			}
 			else {
@@ -90,7 +90,7 @@ int main() {
 		}
 		else {
 			amount += 100 * rateInit;
-			if (3 < MONTH < 12) {
+			if (3 < MONTH && MONTH < 12) {
 				amount += 400 * rateMidNonWinter;
 			}
 			else {
