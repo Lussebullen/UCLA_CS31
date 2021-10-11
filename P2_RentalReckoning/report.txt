@@ -1,0 +1,10 @@
+a. Obstacles:
+
+Most notable obstacle I overcame was finding a reasonable way to simplify the code. 
+Although I did not implement it because my current version is working. 
+Other than that, I fell into the habit of using the mathematical a<b<c notation rather than 
+a<b && b<c, I only caught this due to testing with g31.
+Furthermore I have become more familiar with the IDE, and know how to switch main project
+and the shortcut to running the code. 
+
+b. Test cases:
