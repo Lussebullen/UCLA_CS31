@@ -32,7 +32,7 @@ int main() {
 	cout << "Customer name: ";
 	getline(cin, NAME);
 	cout << "Luxury car? (y/n): ";
-	cin >> LUXURY;
+	getline(cin, LUXURY);
 	cout << "Month (1=Jan, 2=Feb, etc.): ";
 	cin >> MONTH;
 
@@ -61,7 +61,7 @@ int main() {
 		cout << "---" << endl;
 		cout << "You must enter y or n." << endl;
 	}
-	else if (MONTH<1 || MONTH>12) { //What if MONTH is a decimal number?
+	else if (MONTH<1 || MONTH>12) {
 		cout << "---" << endl;
 		cout << "The month number must be in the range 1 through 12." << endl;
 	}
@@ -98,6 +98,9 @@ int main() {
 			}
 			amount += (dist - 500) * rateLong;
 		}
+		// Ensure correct amount of decimals
+		cout.setf(ios::fixed);
+		cout.precision(2);
 
 		cout << "---" << endl;
 		cout << "The rental charge for " << NAME << " is $" << amount << endl;
