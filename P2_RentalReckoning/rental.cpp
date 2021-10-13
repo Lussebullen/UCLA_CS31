@@ -7,16 +7,16 @@ using namespace std;
 
 int main() {
 	// Input variable declaration
-	int ODO_START;
-	int ODO_END;
-	int DAYS;
-	int MONTH;
+	double ODO_START;
+	double ODO_END;
+	double DAYS;
+	double MONTH;
 	string NAME;
 	string LUXURY;
 
 	// Declaration of given constants
-	int dailyBase = 43;
-	int dailyLux = 71;
+	double dailyBase = 43;
+	double dailyLux = 71;
 	double rateInit = 0.27;
 	double rateMidNonWinter = 0.21;
 	double rateLong = 0.17;
@@ -30,7 +30,7 @@ int main() {
 	cin >> DAYS;
 	cin.ignore(10000, '\n');
 	cout << "Customer name: ";
-	getline(cin, NAME);
+	getline(cin, NAME); //Should I use getline for all of them?
 	cout << "Luxury car? (y/n): ";
 	getline(cin, LUXURY);
 	cout << "Month (1=Jan, 2=Feb, etc.): ";
