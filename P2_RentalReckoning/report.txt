@@ -7,4 +7,46 @@ a<b && b<c, I only caught this due to testing with g31.
 Furthermore I have become more familiar with the IDE, and know how to switch main project
 and the shortcut to running the code. 
 
+One obstacle - or rather a confusion I encountered was regarding getline and cin. 
+I mostly used cin, for all cases where I didnt anticipate any spaces in the input. 
+However, when using cin the program would not continue if I only pressed enter, it required a non
+backspace input, which is good to be aware of for future error handling. I decided to ignore it as
+I didnt see any requirement to handle unintended newline characters in the spec.
+
 b. Test cases:
+
+Test cases for error handling - all give desired output.
+Input		Description							
+-10,1,1,J,y,1	Negative initial odometer reading				
+0,1,0,J,y,1	Non positive rental days					
+0,0,1,\n,n,1	Empty string customer name					
+0,0,1,J,0,10	Non y/n input to luxury car					
+0,0,1,J,n,0	month not in [1,12], month>12					
+0,0,1,J,n,13	month not in [1,12], month<1					
+5,3,1,J,t,1	End odometer lower than initial + wrong luxury car input	
+
+This last error test also tests that only first error is reflected in output.  
+
+Test cases for correct input
+Input			Description
+0,0,5,James Bond,y,1	Tests base charge for rental days luxury car (as well as getline working)
+0,0,5,James,n,1		As above, but for non-luxury car
+10,60,2,James,y,5	Test if the charge per mile works for first 100 miles
+0,100,5,James,n,5	Test if charge per mile works at 101 miles non winter
+0,101,5,James,n,5	Test if charge per mile transition works from 100 to 101
+0,101,1,James,n,1	Test if charge per mile works at 101 miles winter
+0,150,1,James,y,11	Test month transition nov
+0,150,1,James,y,12	Test month transition dec
+0,150,1,James,y,3	Test month transition mar
+0,150,1,James,y,4	Test month transition apr
+0,500,5,James,y,4	Test mile transition 500
+0,501,5,James,y,4	Test mile transition 500
+
+By no means exhaustive testing, but all transitions are tested in at least one branch.
+
+
+
+
+
+
+

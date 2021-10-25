@@ -79,24 +79,24 @@ int main() {
 		if (dist<=100) {
 			amount += dist * rateInit;
 		}
-		else if (dist>100 && dist <= 500) {
-			amount += 100 * rateInit;
+		else if (dist>100.0 && dist <= 500.0) {
+			amount += 100.0 * rateInit;
 			if (3 < MONTH && MONTH < 12) {
-				amount += (dist - 100) * rateMidNonWinter;
+				amount += (dist - 100.0) * rateMidNonWinter;
 			}
 			else {
-				amount += (dist - 100) * rateInit;
+				amount += (dist - 100.0) * rateInit;
 			}
 		}
 		else {
-			amount += 100 * rateInit;
+			amount += 100.0 * rateInit;
 			if (3 < MONTH && MONTH < 12) {
-				amount += 400 * rateMidNonWinter;
+				amount += 400.0 * rateMidNonWinter;
 			}
 			else {
-				amount += 400 * rateInit;
+				amount += 400.0 * rateInit;
 			}
-			amount += (dist - 500) * rateLong;
+			amount += (dist - 500.0) * rateLong;
 		}
 		// Ensure correct amount of decimals
 		cout.setf(ios::fixed);
