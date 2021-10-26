@@ -11,6 +11,7 @@ bool processPlanPortion(string plan, int& startIndex, int n)
 {	// Takes only all upper case plans
 	// Returns whether or not there is a plan portion starting at startIndex in string.
 	int i = 0;
+	// While within bounds check if 0, 1 or 2 integers followed by a turn letter.
 	while (i <= MAX_CONSECUTIVE_INTEGERS && i + startIndex < n)
 	{
 		if (plan.at(i + startIndex)=='R' || plan.at(i + startIndex)=='L')
@@ -28,7 +29,7 @@ bool processPlanPortion(string plan, int& startIndex, int n)
 }
 
 int numericalDir(char dir)
-{
+{	// Simply returns an integer corresponding to each cardinal direction, starting with 'N' -> 0 and increasing clockwise.
 	switch (dir)
 	{
 	case 'N':
@@ -95,10 +96,10 @@ int parsePlanPortion(string plan, int& startIndex, int n, char& dir)
 		steps += 10 * (plan.at(startIndex + digits - 2) - '0'); // 10^1 position
 		startIndex += 3;
 	}
-	return steps; // FIXME: test 
+	return steps; 
 }
 
-// Moves one step in direction dir if possible and returns true
+// Moves dist steps in direction dir, for dist=1 returns true if step is possible. 
 // else returns false if wall or out of bounds.
 bool moveDirection(int& r, int& c, char dir, int dist)
 {
@@ -160,7 +161,7 @@ bool hasCorrectForm(string plan)
 {
 	const int planLength = static_cast<int>(plan.size());
 
-	// Convert all to upper case
+	// Convert plan to upper case
 	for (int i = 0; i < planLength; i++)
 	{
 		plan.at(i) = toupper(plan.at(i));
@@ -169,7 +170,8 @@ bool hasCorrectForm(string plan)
 	// Check plan by valid portions
 	int planPortionStart = 0;
 
-	// If string contains incorrect plan portions return false, else true. 
+	// If string contains incorrect plan portions return false, else true.
+	// Checks plan portion by plan portion until incorrect plan portion, or end of plan is reached.
 	while (planPortionStart < planLength)
 	{
 		if (!processPlanPortion(plan, planPortionStart, planLength))
@@ -330,6 +332,7 @@ int main()
 	assert(!hasCorrectForm("w2+n3"));
 	assert(!hasCorrectForm("0LL000L"));
 	assert(!hasCorrectForm("rLl5l5r12l35rR000l"));
+	assert(!hasCorrectForm("0"));
 
 	// Positive cases
 	assert(hasCorrectForm("5rL00L0R09R7L"));
@@ -341,6 +344,7 @@ int main()
 	assert(hasCorrectForm("LL2R2r2L1R"));
 	assert(hasCorrectForm("LL2R3r2L"));
 	assert(hasCorrectForm("LL3R"));
+	assert(hasCorrectForm("l"));
 
 	// Test parsePlanPortion
 	int lastStringIndex = 0;
@@ -476,16 +480,8 @@ int main()
 	setWall(5, 4);
 	//draw(1, 1, 6, 3);
 
-	int sc = 1;
-	int sr = 1;
-	int er = 6;
-	int ec = 3;
-	plan = "2l1R2L1r1r";
-	dir = 's';
-	int nsteps = 0;
-	assert(obeyPlan(sr, sc, er, ec, dir, plan, nsteps) == 0);
-	assert(nsteps == 7);
-
+	// Test obeyPlan with plans of various results as seen in the validity array. 
+	int nsteps = -100;
 	string planList[7] = { "2l1R2L1r1r" , "2l5R3r3l", "2l3R1L" , "3r2L", "2l5R3r3l2r" , "3r", "2l2l1r"};
 	char dirList[7] = {'s', 's', 'S' , 'E', 's', 'w', 's'};
 	int validity[7] = {0, 0, 1, 3, 3, 3, 1};
@@ -493,27 +489,26 @@ int main()
 	for (int i = 0; i < 7; i++)
 	{
 		char dir = dirList[i];
-		assert(obeyPlan(sr, sc, er, ec, dir, planList[i], nsteps) == validity[i]);
+		assert(obeyPlan(1, 1, 6, 3, dir, planList[i], nsteps) == validity[i]);
 		assert(stepList[i] == nsteps);
 	}
 
 	// test invalid starting pos, ending pos, and direction.
-	nsteps = 7;
-	dir = 's';
-	assert(obeyPlan(2, 2, er, ec, dir, "2l1R2L1r1r", nsteps) == 2);
-	assert(nsteps == 7);
+	nsteps = -7;
+	assert(obeyPlan(2, 2, 6, 3, 's', "2l1R2L1r1r", nsteps) == 2);
+	assert(nsteps == -7);
 	assert(obeyPlan(2, 1, 4, 3, 's', "2l1R2L1r1r", nsteps) == 2);
-	assert(nsteps == 7);
+	assert(nsteps == -7);
 	assert(obeyPlan(1, 1, 3, 3, 'f', "2l1R2L1r1r", nsteps) == 2);
-	assert(nsteps == 7);
+	assert(nsteps == -7);
 	assert(obeyPlan(-1, 1, 3, 3, 'f', "2l1R2L1r1r", nsteps) == 2);
-	assert(nsteps == 7);
+	assert(nsteps == -7);
 	assert(obeyPlan(1, 0, 3, 3, 'f', "2l1R2L1r1r", nsteps) == 2);
-	assert(nsteps == 7);
+	assert(nsteps == -7);
 	assert(obeyPlan(1, 1, 7, 3, 'f', "2l1R2L1r1r", nsteps) == 2);
-	assert(nsteps == 7);
+	assert(nsteps == -7);
 	assert(obeyPlan(1, 1, 3, 9, 'f', "2l1R2L1r1r", nsteps) == 2);
-	assert(nsteps == 7);
+	assert(nsteps == -7);
 
 	cerr << "All tests succeeded" << endl;
 	// End of testing section
