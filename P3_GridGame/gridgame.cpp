@@ -230,6 +230,9 @@ int obeyPlan(int sr, int sc, int er, int ec, char dir, string plan, int& nsteps)
 	{
 		plan.at(i) = toupper(plan.at(i));
 	}
+	
+	// we set nsteps to 0 as we will start counting steps from this point on.
+	nsteps = 0;
 
 	int startIndex = 0;
 	char newDir = dir;
@@ -487,13 +490,11 @@ int main()
 	char dirList[7] = {'s', 's', 'S' , 'E', 's', 'w', 's'};
 	int validity[7] = {0, 0, 1, 3, 3, 3, 1};
 	int stepList[7] = {7, 13, 6, 1, 13, 0, 5};
-	int cumulativeSteps = 7;
 	for (int i = 0; i < 7; i++)
 	{
 		char dir = dirList[i];
 		assert(obeyPlan(sr, sc, er, ec, dir, planList[i], nsteps) == validity[i]);
-		cumulativeSteps += stepList[i];
-		assert(cumulativeSteps == nsteps);
+		assert(stepList[i] == nsteps);
 	}
 
 	// test invalid starting pos, ending pos, and direction.
