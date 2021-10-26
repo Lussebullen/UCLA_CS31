@@ -4,6 +4,7 @@
 using namespace std;
 
 const int MAX_CONSECUTIVE_INTEGERS = 2;
+const char CARDINAL_DIRECTIONS[4] = {'N', 'E', 'S', 'W'};
 
 // Used to iterate through plan to determine if plan portions are of correct form.
 bool processPlanPortion(string plan, int& startIndex, int n)
@@ -26,10 +27,79 @@ bool processPlanPortion(string plan, int& startIndex, int n)
 	return false;
 }
 
+int numericalDir(char dir)
+{
+	int numericalDirection;
+	switch (dir)
+	{
+	case 'N':
+		return 0;
+		break;
+	case 'E':
+		return 1;
+		break;
+	case 'S':
+		return 2;
+		break;
+	case 'W':
+		return 3;
+		break;
+	default:
+		cout << "Direction has to be N, S, W or E" << endl;
+	}
+}
+
+// Returns desired steps in direction from plan portion, and updates dir.
+int parsePlanPortion(string plan, int& startIndex, int n, char& dir)
+{	// Takes only all upper case plans
+
+	// Find # of digits in front of turn letter.
+	int digits = 0;
+	while (!isalpha(plan.at(startIndex + digits)))
+	{
+		digits++;
+	}
+	
+	// Turn letter in plan portion
+	char turn = toupper(plan.at(startIndex + digits));
+
+	// Gets the numerical mapping of given direction and changes accoring to turn letter
+	int numericalDirection = numericalDir(dir);
+	if (turn == 'R') {
+		numericalDirection++;
+	}
+	else 
+	{
+		numericalDirection += 3; // same as -- in modulo 4, but avoids potential negatives.
+	}
+
+	// Sets dir to be the updated direction using a cyclic indexing with modulo
+	dir = CARDINAL_DIRECTIONS[numericalDirection % 4];
+
+	// Get desired amount of steps
+	int steps = 0;
+	if (digits == 0)
+	{
+		startIndex++;
+	}
+	if (digits == 1)
+	{
+		steps = plan.at(startIndex + digits - 1) - '0'; // convert char to int
+		startIndex += 2;
+	}
+	if (digits == 2)
+	{
+		steps += plan.at(startIndex + digits - 1) - '0';			// 10^0 position
+		steps += 10 * (plan.at(startIndex + digits - 2) - '0'); // 10^1 position
+		startIndex += 3;
+	}
+	return steps; // FIXME: test 
+}
+
+// Moves one step in direction dir if possible and returns true
+// else returns false if wall or out of bounds.
 bool moveDirection(int& r, int& c, char dir)
 {
-	// Moves one step in direction dir if possible and returns true
-	// else returns false if wall or out of bounds.
 	switch (dir)
 	{
 	case 'N':
@@ -67,17 +137,19 @@ bool moveDirection(int& r, int& c, char dir)
 	}
 }
 
+// Checks if position is in valid square and inside given bounds. 
 bool validPosition(int r, int c)
 {
-	if (isWall(r,c))
-	{
-		return false;
-	}
-
 	if (r < 1 || r > getRows() || c < 1 || c > getCols())
 	{
 		return false;
 	}
+
+	if (isWall(r, c))
+	{
+		return false;
+	}
+
 	return true;
 }
 
@@ -117,11 +189,7 @@ int determineSafeDistance(int r, int c, char dir, int maxSteps)
 	{
 		return -1;
 	}
-	if (r < 1 || c < 1 || r > getRows() || c > getCols())
-	{
-		return -1;
-	}
-	if (isWall(r, c) || maxSteps < 0)
+	if (!validPosition(r,c) || maxSteps < 0)
 	{
 		return -1;
 	}
@@ -145,7 +213,7 @@ int obeyPlan(int sr, int sc, int er, int ec, char dir, string plan, int& nsteps)
 {
 	// Handles invalid inputs
 	dir = toupper(dir);
-	if (!validPosition(sr, sc) || !validPosition(er, ec))
+	if (!validPosition(sr, sc) || !validPosition(er, ec) || !hasCorrectForm(plan))
 	{
 		return 2;
 	}
@@ -153,6 +221,14 @@ int obeyPlan(int sr, int sc, int er, int ec, char dir, string plan, int& nsteps)
 	{
 		return 2;
 	}
+
+	// Convert plan to upper case
+	const int planLength = static_cast<int>(plan.size());
+	for (int i = 0; i < planLength; i++)
+	{
+		plan.at(i) = toupper(plan.at(i));
+	}
+
 
 	return 0; // FIXME: all
 }
@@ -233,6 +309,31 @@ int main()
 	assert(hasCorrectForm("LL2R2r2L1R"));
 	assert(hasCorrectForm("LL2R3r2L"));
 	assert(hasCorrectForm("LL3R"));
+
+	// Test parsePlanPortion
+	int lastStringIndex = 0;
+	char dir = 'N';
+	string plan = "5RL00L0R09R7L";
+	assert(parsePlanPortion(plan, lastStringIndex, static_cast<int>(plan.length()), dir) == 5);
+	assert(dir == 'E');
+	assert(lastStringIndex == 2);
+	assert(parsePlanPortion(plan, lastStringIndex, static_cast<int>(plan.length()), dir) == 0);
+	assert(dir == 'N');
+	assert(lastStringIndex == 3);
+	assert(parsePlanPortion(plan, lastStringIndex, static_cast<int>(plan.length()), dir) == 0);
+	assert(dir == 'W');
+	assert(lastStringIndex == 6);
+	assert(parsePlanPortion(plan, lastStringIndex, static_cast<int>(plan.length()), dir) == 0);
+	assert(dir == 'N');
+	assert(lastStringIndex == 8);
+	assert(parsePlanPortion(plan, lastStringIndex, static_cast<int>(plan.length()), dir) == 9);
+	assert(dir == 'E');
+	assert(lastStringIndex == 11);
+	assert(parsePlanPortion(plan, lastStringIndex, static_cast<int>(plan.length()), dir) == 7);
+	assert(dir == 'N');
+	assert(lastStringIndex == 13);
+
+
 
 
 	setSize(3, 4);      // make a 3 by 4 grid
