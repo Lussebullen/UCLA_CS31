@@ -29,7 +29,6 @@ bool processPlanPortion(string plan, int& startIndex, int n)
 
 int numericalDir(char dir)
 {
-	int numericalDirection;
 	switch (dir)
 	{
 	case 'N':
@@ -44,14 +43,17 @@ int numericalDir(char dir)
 	case 'W':
 		return 3;
 		break;
-	default:
-		cout << "Direction has to be N, S, W or E" << endl;
 	}
 }
 
-// Returns desired steps in direction from plan portion, and updates dir.
+// Returns desired steps in direction from plan portion, and updates dir. Only uppercase plan.
 int parsePlanPortion(string plan, int& startIndex, int n, char& dir)
-{	// Takes only all upper case plans
+{	
+	// Stops when index passes length of string.
+	if (startIndex >= n)
+	{
+		return 0;
+	}
 
 	// Find # of digits in front of turn letter.
 	int digits = 0;
@@ -98,7 +100,7 @@ int parsePlanPortion(string plan, int& startIndex, int n, char& dir)
 
 // Moves one step in direction dir if possible and returns true
 // else returns false if wall or out of bounds.
-bool moveDirection(int& r, int& c, char dir)
+bool moveDirection(int& r, int& c, char dir, int dist)
 {
 	switch (dir)
 	{
@@ -107,7 +109,7 @@ bool moveDirection(int& r, int& c, char dir)
 		{
 			return false;
 		}
-		r -= 1;
+		r -= dist;
 		return true;
 		break;
 	case 'E':
@@ -115,7 +117,7 @@ bool moveDirection(int& r, int& c, char dir)
 		{
 			return false;
 		}
-		c += 1;
+		c += dist;
 		return true;
 		break;
 	case 'S':
@@ -123,7 +125,7 @@ bool moveDirection(int& r, int& c, char dir)
 		{
 			return false;
 		}
-		r += 1;
+		r += dist;
 		return true;
 		break;
 	case 'W':
@@ -131,7 +133,7 @@ bool moveDirection(int& r, int& c, char dir)
 		{
 			return false;
 		}
-		c -= 1;
+		c -= dist;
 		return true;
 		break;
 	}
@@ -199,7 +201,7 @@ int determineSafeDistance(int r, int c, char dir, int maxSteps)
 	int count = 0;
 	while (count < maxSteps)
 	{
-		if (!moveDirection(r, c, dir))
+		if (!moveDirection(r, c, dir, 1))
 		{
 			return count;
 		}
@@ -229,8 +231,35 @@ int obeyPlan(int sr, int sc, int er, int ec, char dir, string plan, int& nsteps)
 		plan.at(i) = toupper(plan.at(i));
 	}
 
+	int startIndex = 0;
+	char newDir = dir;
+	int steps = 0;
+	int safeSteps = 0;
 
-	return 0; // FIXME: all
+	while (startIndex < planLength)
+	{
+		steps = parsePlanPortion(plan, startIndex, planLength, newDir);
+		safeSteps = determineSafeDistance(sr, sc, dir, steps);
+
+		nsteps += safeSteps;
+
+		// car hits wall
+		if (safeSteps < steps)
+		{
+			return 3;
+		}
+
+		// car moves desired steps
+		moveDirection(sr, sc, dir, steps);
+		dir = newDir;
+	}
+
+	if (sc == ec && sr == er)
+	{
+		return 0;
+	}
+
+	return 1; // FIXME: all
 }
 
 int main()
@@ -333,48 +362,63 @@ int main()
 	assert(dir == 'N');
 	assert(lastStringIndex == 13);
 
+	lastStringIndex = 0;
+	dir = 'N';
+	plan = "";
+	assert(parsePlanPortion(plan, lastStringIndex, static_cast<int>(plan.length()), dir) == 0);
+	assert(dir == 'N');
+	assert(lastStringIndex == 0);
 
-
+	plan = "LL3R";
+	assert(parsePlanPortion(plan, lastStringIndex, static_cast<int>(plan.length()), dir) == 0);
+	assert(dir == 'W');
+	assert(lastStringIndex == 1);
+	assert(parsePlanPortion(plan, lastStringIndex, static_cast<int>(plan.length()), dir) == 0);
+	assert(dir == 'S');
+	assert(lastStringIndex == 2);
+	assert(parsePlanPortion(plan, lastStringIndex, static_cast<int>(plan.length()), dir) == 3);
+	assert(dir == 'W');
+	assert(lastStringIndex == 4);
 
 	setSize(3, 4);      // make a 3 by 4 grid
 	setWall(1, 4);      // put a wall at (1,4)
 	setWall(2, 2);      // put a wall at (2,2)
 	if (!isWall(3, 2))  // if there's no wall at (3,2)  [there isn't]
 		setWall(3, 2);  //    put a wall at (3,2)
-	draw(3, 1, 3, 4);   // draw the grid, showing an S at (3,1) start
+	//draw(3, 1, 3, 4);   // draw the grid, showing an S at (3,1) start
 						//    position, and an E at (3,4) end position
 
 	// Test moveDirection
 
 	int r = 3;
 	int c = 1;
-	assert(moveDirection(r, c, 'N'));
+	assert(moveDirection(r, c, 'N', 1));
 	assert(r == 2 && c == 1);
-	assert(moveDirection(r, c, 'N'));
+	assert(moveDirection(r, c, 'N', 1));
 	assert(r == 1 && c == 1);
-	assert(!moveDirection(r, c, 'N'));
+	assert(!moveDirection(r, c, 'N', 1));
 	assert(r == 1 && c == 1);
-	assert(!moveDirection(r, c, 'W'));
+	assert(!moveDirection(r, c, 'W', 1));
 	assert(r == 1 && c == 1);
-	assert(moveDirection(r, c, 'E'));
+	assert(moveDirection(r, c, 'E', 1));
 	assert(r == 1 && c == 2);
-	assert(moveDirection(r, c, 'E'));
+	assert(moveDirection(r, c, 'E', 1));
 	assert(r == 1 && c == 3);
-	assert(!moveDirection(r, c, 'E'));
+	assert(!moveDirection(r, c, 'E', 1));
 	assert(r == 1 && c == 3);
-	assert(moveDirection(r, c, 'S'));
+	assert(moveDirection(r, c, 'S', 1));
 	assert(r == 2 && c == 3);
-	assert(moveDirection(r, c, 'S'));
+	assert(moveDirection(r, c, 'S', 1));
 	assert(r == 3 && c == 3);
-	assert(!moveDirection(r, c, 'S'));
+	assert(!moveDirection(r, c, 'S', 1));
 	assert(r == 3 && c == 3);
-	assert(!moveDirection(r, c, 'W'));
+	assert(!moveDirection(r, c, 'W', 1));
 	assert(r == 3 && c == 3);
-	assert(moveDirection(r, c, 'E'));
+	assert(moveDirection(r, c, 'E', 1));
 	assert(r == 3 && c == 4);
-	assert(!moveDirection(r, c, 'E'));
+	assert(!moveDirection(r, c, 'E', 1));
 	assert(r == 3 && c == 4);
-	assert(!moveDirection(r, c, 'S'));
+	assert(!moveDirection(r, c, 'S', 1));
 	assert(r == 3 && c == 4);
 
 	// Test determineSafeDistance
@@ -405,7 +449,7 @@ int main()
 	setWall(2, 8);
 	setWall(8, 2);
 	setWall(20, 21);
-	draw(20, 1, 17, 14);   
+	//draw(20, 1, 17, 14);   
 
 	assert(determineSafeDistance(20, 1, 'e', 29) == 19);
 	assert(determineSafeDistance(20, 1, 'w', 29) == 0);
@@ -415,6 +459,60 @@ int main()
 	assert(determineSafeDistance(10, 21, 'e', 29) == 9);
 	assert(determineSafeDistance(10, 21, 'W', 29) == 20);
 	assert(determineSafeDistance(10, 21, 's', 29) == 9);
+
+	// Test obeyPlan
+	setSize(6, 6);
+	setWall(1, 4);
+	setWall(2, 2);
+	setWall(1, 5);
+	setWall(2, 6);
+	setWall(6, 2);
+	setWall(2, 5);
+	setWall(1, 3);
+	setWall(4, 3);
+	setWall(5, 4);
+	//draw(1, 1, 6, 3);
+
+	int sc = 1;
+	int sr = 1;
+	int er = 6;
+	int ec = 3;
+	plan = "2l1R2L1r1r";
+	dir = 's';
+	int nsteps = 0;
+	assert(obeyPlan(sr, sc, er, ec, dir, plan, nsteps) == 0);
+	assert(nsteps == 7);
+
+	string planList[7] = { "2l1R2L1r1r" , "2l5R3r3l", "2l3R1L" , "3r2L", "2l5R3r3l2r" , "3r", "2l2l1r"};
+	char dirList[7] = {'s', 's', 'S' , 'E', 's', 'w', 's'};
+	int validity[7] = {0, 0, 1, 3, 3, 3, 1};
+	int stepList[7] = {7, 13, 6, 1, 13, 0, 5};
+	int cumulativeSteps = 7;
+	for (int i = 0; i < 7; i++)
+	{
+		char dir = dirList[i];
+		assert(obeyPlan(sr, sc, er, ec, dir, planList[i], nsteps) == validity[i]);
+		cumulativeSteps += stepList[i];
+		assert(cumulativeSteps == nsteps);
+	}
+
+	// test invalid starting pos, ending pos, and direction.
+	nsteps = 7;
+	dir = 's';
+	assert(obeyPlan(2, 2, er, ec, dir, "2l1R2L1r1r", nsteps) == 2);
+	assert(nsteps == 7);
+	assert(obeyPlan(2, 1, 4, 3, 's', "2l1R2L1r1r", nsteps) == 2);
+	assert(nsteps == 7);
+	assert(obeyPlan(1, 1, 3, 3, 'f', "2l1R2L1r1r", nsteps) == 2);
+	assert(nsteps == 7);
+	assert(obeyPlan(-1, 1, 3, 3, 'f', "2l1R2L1r1r", nsteps) == 2);
+	assert(nsteps == 7);
+	assert(obeyPlan(1, 0, 3, 3, 'f', "2l1R2L1r1r", nsteps) == 2);
+	assert(nsteps == 7);
+	assert(obeyPlan(1, 1, 7, 3, 'f', "2l1R2L1r1r", nsteps) == 2);
+	assert(nsteps == 7);
+	assert(obeyPlan(1, 1, 3, 9, 'f', "2l1R2L1r1r", nsteps) == 2);
+	assert(nsteps == 7);
 
 	cerr << "All tests succeeded" << endl;
 	// End of testing section
