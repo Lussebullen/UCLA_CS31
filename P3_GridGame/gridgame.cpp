@@ -40,7 +40,7 @@ int numericalDir(char dir)
 	case 'S':
 		return 2;
 		break;
-	case 'W':
+	default:
 		return 3;
 		break;
 	}
@@ -128,7 +128,7 @@ bool moveDirection(int& r, int& c, char dir, int dist)
 		r += dist;
 		return true;
 		break;
-	case 'W':
+	default:
 		if (c <= 1 || isWall(r, c - 1))
 		{
 			return false;
