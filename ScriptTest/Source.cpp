@@ -1,20 +1,24 @@
 #include <iostream>
 using namespace std;
+#include <math.h>
 
-string justLetters(string s)
+bool isPalindrome(string str)
 {
-    string result = "";
-    for (int k = 0; k != s.size(); k++)
-    {
-        if (islower(s.at(k)))
-            result += s.at(k);
-        if (isupper(s.at(k)))
-            result += tolower(s.at(k));
-    }
-    return result;
+	int len = static_cast<int>(str.size());
+	int n = len / 2;
+	for (int i = 0; i < n; i++)
+	{
+		if (str.at(i) != str.at(len - 1 - i))
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 int main()
 {
-    cout << justLetters("CS 31's 1st lecture was Sep. 27.") << endl;
+	string str;
+	cin >> str;
+	cout << isPalindrome(str) << endl;
 }
