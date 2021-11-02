@@ -172,7 +172,47 @@ int locateAny(const string a1[], int n1, const string a2[], int n2)
 
 int separate(string a[], int n, string separator)
 {
-	return;		// FIXME : Construct function.
+	if (n < 0)
+	{
+		return -1;
+	}
+	// Rearrangement
+	int i = 0;
+	int j = n - 1;
+	while (i < j) 
+	{
+		if (a[i] > separator && a[j] < separator)
+		{	//Swap values
+			string tmpString = a[i];
+			a[i] = a[j];
+			a[j] = tmpString;
+			i++;
+			j--;
+		}
+		else if (a[i] > separator)
+		{
+			j--;
+		}
+		else if (a[j] < separator)
+		{
+			i++;
+		} 
+		else
+		{
+			i++;
+			j--;
+		}
+	}
+
+	// Return value computation
+	for (int k = 0; k < n; k++)
+	{
+		if (a[k] >= separator)
+		{
+			return k;
+		}
+	}
+	return n;
 }
 
 int main()
@@ -200,7 +240,7 @@ int main()
 	assert(locateAny(h, 7, f, 3) == 2);
 	assert(flip(f, 3) == 3 && f[0] == "raya" && f[2] == "tiana");
 
-	//assert(separate(h, 7, "elsa") == 3);
+	assert(separate(h, 7, "elsa") == 3);
 
 	cout << "All tests succeeded" << endl;
 }
