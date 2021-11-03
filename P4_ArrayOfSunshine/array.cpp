@@ -178,7 +178,7 @@ int locateAny(const string a1[], int n1, const string a2[], int n2)
 
 int separate(string a[], int n, string separator)
 {
-	if (n < 0)	// Handle degenerate cases
+	if (n < 1)	// Handle degenerate cases
 	{
 		return -1;
 	}
@@ -256,7 +256,7 @@ int main()
 	string g[4] = { "moana", "mulan", "belle", "raya" };
 	assert(locateDifference(h, 4, g, 4) == 2);
 	assert(circleLeft(g, 4, 1) == 1 && g[1] == "belle" && g[3] == "mulan");
-	assert(circleLeft(g,0,1) == -1);
+	assert(circleLeft(g, 0, 1) == -1);
 	assert(circleLeft(g, -1, 1) == -1);
 	assert(circleLeft(g, 2, 3) == -1);
 	assert(circleLeft(g, 3, -1) == -1);
@@ -314,6 +314,7 @@ int main()
 	assert(locateAny(names, 6, set1, 4) == 1);
 	string set3[1] = { "mulan" };
 	assert(locateAny(set1, 4, set3, 1) == 3);
+	assert(locateAny(set1, 0, set3, 0) == -1);
 
 	// Test separate
 	assert(separate(h, 7, "elsa") == 3);
@@ -323,7 +324,7 @@ int main()
 	assert(separate(cast2, 4, "raya") == 2 && cast2[0]=="mulan" && cast2[1]=="ariel" && cast2[2]=="tiana");
 	assert(separate(cast,-1,"cow") == -1);
 	assert(separate(cast, 6, "zebra") == 6);
-	assert(separate(cast, 0, "zebra") == 0);
+	assert(separate(cast, 0, "zebra") == -1);
 
 
 	cout << "All tests succeeded" << endl;
