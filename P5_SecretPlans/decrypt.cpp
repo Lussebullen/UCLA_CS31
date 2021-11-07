@@ -26,6 +26,12 @@ struct SentenceForm
 	Word Words[MAX_CHARS / 2];
 };
 
+struct IntVector
+{
+	int Length;
+	int Values[MAX_CHARS / 2];
+};
+
 SentenceForm findForm(const char sentence[])
 {	// Construct summary of sentence shape
 	int n = strlen(sentence);
@@ -60,28 +66,86 @@ SentenceForm findForm(const char sentence[])
 	return result;
 }
 
-int formMatch(const char cipherline[], const char crib[])
+IntVector formMatch(SentenceForm cipherForm, SentenceForm cribForm)
 {	// returns start word of form match or -1 if no match
+	int n_cipher = cipherForm.Length;
+	int n_crib = cribForm.Length;
+	int i = 0;
+	int j = 0;
+	int matchLocations[MAX_CHARS / 2];
+	int count = 0;
+	while (i < n_cipher)
+	{
+		if (cipherForm.Words[i + j].Length != cribForm.Words[j].Length)
+		{
+			i++;
+			j = 0;
+		}
+		j++;
+		if (j == n_crib)
+		{	// all word shapes matched, ADD check if simple cipher form
+			matchLocations[count] = i;
+			count++;
+			i++;
+			j = 0;
+		}
+	}
+	IntVector matches;
+	matches.Length = count;
+	for (int i = 0; i < count; i++)
+	{
+		matches.Values[i] = matchLocations[i];
+	}
+	return matches;
+}
+bool findKey(int n, int matchWords[], int cribWords[], const char ciphertext[], const char crib[])
+{		// FIXME: Doesnt handle different case, i.e. a/A
+	for (int i = 0; i < n; i++)
+	{
+		int locMatch = matchWords[i];
+		int locCrib = cribWords[i];
+		int j = 0;
+		while (isalpha(crib[locCrib + j]))
+		{
+			if (crib[locCrib + j] != ciphertext[locMatch + j])
+			{
+				return false;
+			}
+		}
 
-
-	return -1;
+	}
 }
 
-char* formcheck(const char cipherline[], const char crib[])	// FIXME: datatype
-{ // Return pointer to first instance of a form fit of crib in a line of ciphertext
-	int nl = strlen(cipherline);
-	int nc = strlen(crib);
-	if (nc > MAX_CHARS)
+bool decrypt(const char ciphertext[], const char crib[])
+{
+	// FIXME: Include error handling
+	SentenceForm cribForm = findForm(crib);
+	SentenceForm cipherForm;
+	
+	cipherForm = findForm(ciphertext);	//FIXME: Do this per line
+	IntVector matches = formMatch(cipherForm, cribForm);
+
+	int words = cribForm.Length;		// # of words in crib to check
+
+	int cribWords[MAX_CHARS / 2];					// Holds starting indexes for words in crib
+	for (int i = 0; i < words; i++)
 	{
-		return nullptr;
+		cribWords[i] = cribForm.Words[i].Loc;
 	}
+	char cribcontinuous[MAX_CHARS];		//only letters in string
 
-	Word sentenceFormCipher[MAX_CHARS / 2];
-	SentenceForm sentenceFormCrib = findForm(crib);
-	// Construct summary of crib sentence shape
-
-
-	return nullptr;
+	
+	for (int i = 0; i < matches.Length; i++)
+	{	// Try all possible matches
+		int matchWords[MAX_CHARS / 2];				// Holds starting indexes for words in specific match
+		int wordNumber = matches.Values[i];			// word# for first matching word
+		for (int j = 0; j < words; j++)
+		{
+			matchWords[j] = cipherForm.Words[j + wordNumber].Loc;
+		}
+		findKey(words, matchWords, cribWords, ciphertext, crib);		// FIXME: make key function
+		
+	}
 }
 
 int main()
@@ -92,12 +156,23 @@ int main()
 	runtest("Hirdd ejsy zu drvtry od.\nO'z fodvtrry.\n", "my secret");
 	runtest("Hirdd ejsy zu drvtry od.\nO'z fodvtrry.\n", "shadow");
 	*/
-	formcheck("asdsa", "123!@cow ea8ts --assgrass");
 	SentenceForm form = findForm("123!@cow ea8ts --assgrass");
-	cout << "Number of words: " << form.Length << endl;
-	cout << "Word lengths:" << endl;
+	SentenceForm formciph = findForm("aba fd sa ifdsaaaa ay aysaufd fd  ifd 87 aa!bb!)hbbsasdd33j");
+	cout << "crib" << endl;
 	for (int i = 0; i < form.Length; i++)
 	{
 		cout << form.Words[i].Length << endl;
 	}
+	cout << "ciph" << endl;
+	for (int i = 0; i < formciph.Length; i++)
+	{
+		cout << formciph.Words[i].Length << endl;
+	}
+	IntVector matches = formMatch(formciph, form);
+	for (int i = 0; i < matches.Length; i++)
+	{
+		cout << "Match at word: ";
+		cout << matches.Values[i] << endl;
+	}
+
 }
