@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_DEPRECATE
 #include <iostream>
 #include <cstring>
 #include <cassert>
@@ -114,6 +115,29 @@ bool findKey(int n, int matchWords[], int cribWords[], const char ciphertext[], 
 		}
 
 	}
+	return true; //FIXME
+}
+
+void combineWords(SentenceForm form, const char sentence[], char target[])
+{	// Combines the sentence form from sentence into a single word, and copies it to target.
+	int n = form.Length;				// # of words
+
+	char continuous[MAX_CHARS];			//only letters in string
+	int count = 0;
+	for (int i = 0; i < n; i++)
+	{
+		int j = 0;
+		while (form.Words[i].Loc + j < MAX_CHARS && isalpha(sentence[form.Words[i].Loc + j]))
+		{
+			continuous[count] = sentence[form.Words[i].Loc + j];
+			count++;
+			j++;
+		}
+		j = 0;
+	}
+	continuous[count] = '\0';
+
+	strcpy(target, continuous);
 }
 
 bool decrypt(const char ciphertext[], const char crib[])
@@ -125,15 +149,15 @@ bool decrypt(const char ciphertext[], const char crib[])
 	cipherForm = findForm(ciphertext);	//FIXME: Do this per line
 	IntVector matches = formMatch(cipherForm, cribForm);
 
+	char ciphercpy[MAX_CHARS];
+	strcpy(ciphercpy, ciphertext);
+	char cribcpy[MAX_CHARS];
+	strcpy(cribcpy, crib);
+	char cribcontinuous[MAX_CHARS];		//only letters in string
 	int words = cribForm.Length;		// # of words in crib to check
 
-	int cribWords[MAX_CHARS / 2];					// Holds starting indexes for words in crib
-	for (int i = 0; i < words; i++)
-	{
-		cribWords[i] = cribForm.Words[i].Loc;
-	}
-	char cribcontinuous[MAX_CHARS];		//only letters in string
-
+	combineWords(cribForm, crib, cribcontinuous);
+	cout << cribcontinuous << endl;
 	
 	for (int i = 0; i < matches.Length; i++)
 	{	// Try all possible matches
@@ -143,9 +167,11 @@ bool decrypt(const char ciphertext[], const char crib[])
 		{
 			matchWords[j] = cipherForm.Words[j + wordNumber].Loc;
 		}
-		findKey(words, matchWords, cribWords, ciphertext, crib);		// FIXME: make key function
+		//findKey(words, matchWords, cribWords, ciphertext, crib);		// FIXME: make key function
 		
 	}
+
+	return true; //FIXME
 }
 
 int main()
@@ -174,5 +200,5 @@ int main()
 		cout << "Match at word: ";
 		cout << matches.Values[i] << endl;
 	}
-
+	decrypt("aba fd sa ifdsaaaa ay aysaufd fd  ifd 87 aa!bb!)hbbsasdd33j", "123!@cow ea8ts --assgrass");
 }
