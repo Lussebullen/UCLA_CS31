@@ -42,21 +42,25 @@ SentenceForm findForm(const char sentence[])
 	Word forms[MAX_CHARS / 2];			//Contains each word
 	while (i < n)
 	{
-		while (!isalpha(sentence[i]))	//Pass all non alphabetical characters
+		while (sentence[i] != '\0' && !isalpha(sentence[i]))	//Pass all non alphabetical characters
 		{
 			i++;
 		}
 		Word tmpWord;
 		tmpWord.Loc = i;
 		count = 0;
-		while (isalpha(sentence[i]))	//Count consecutive alphabetical characters
+		while (sentence[i] != '\0' && isalpha(sentence[i]))	//Count consecutive alphabetical characters
 		{
 			count++;
 			i++;
 		}
-		tmpWord.Length = count;
-		forms[wordCount] = tmpWord;
-		wordCount++;
+		if (count > 0)
+		{
+			tmpWord.Length = count;
+			forms[wordCount] = tmpWord;
+			wordCount++;
+		}
+		
 	}
 	SentenceForm result;				//Contains array of words, and amount of words.
 	result.Length = wordCount;
@@ -81,8 +85,11 @@ IntVector formMatch(SentenceForm cipherForm, SentenceForm cribForm)
 		{
 			i++;
 			j = 0;
+		} 
+		else
+		{
+			j++;
 		}
-		j++;
 		if (j == n_crib)
 		{	// all word shapes matched, ADD check if simple cipher form
 			matchLocations[count] = i;
@@ -99,22 +106,44 @@ IntVector formMatch(SentenceForm cipherForm, SentenceForm cribForm)
 	}
 	return matches;
 }
-bool findKey(int n, int matchWords[], int cribWords[], const char ciphertext[], const char crib[])
-{		// FIXME: Doesnt handle different case, i.e. a/A
+bool findKey(char cribstring[], char cipherstring[])
+{	// FIXME: Doesnt handle different case, i.e. a/A
+	int n = strlen(cribstring);
+
+	for (int i = 0; i < n; i++)
+	{	// to lower case
+		cribstring[i] = tolower(cribstring[i]);
+		cipherstring[i] = tolower(cipherstring[i]);
+	}
+
+	// Arrays to hold original and key letter pairs
+	char original[MAX_CHARS] = {};
+	char key[MAX_CHARS] = {};
+	int count = 0;
 	for (int i = 0; i < n; i++)
 	{
-		int locMatch = matchWords[i];
-		int locCrib = cribWords[i];
-		int j = 0;
-		while (isalpha(crib[locCrib + j]))
+		if (strchr(original, cribstring[i]) == NULL && strchr(key, cipherstring[i]) == NULL)
 		{
-			if (crib[locCrib + j] != ciphertext[locMatch + j])
-			{
-				return false;
-			}
+			original[count] = cribstring[i];
+			original[count + 1] = '\0';
+			key[count] = cipherstring[i];
+			key[count + 1] = '\0';
+			count++;
 		}
+		else if (strchr(original, cribstring[i]) != NULL && strchr(key, cipherstring[i]) != NULL)
+		{
 
+		}
+		else
+		{
+			cout << "No key" << endl;
+			return false;
+		}
 	}
+	cout << "Key:" << endl;
+	cout << original << endl;
+	cout << key << endl;
+
 	return true; //FIXME
 }
 
@@ -144,7 +173,7 @@ bool decrypt(const char ciphertext[], const char crib[])
 	
 	char cribcontinuous[MAX_CHARS];					//only letters in string after calling combineWords				
 	combineWords(crib, cribcontinuous);	
-
+	cout << "Crib: " << cribcontinuous << endl;
 	SentenceForm cipherForm;
 	
 	cipherForm = findForm(ciphertext);				//FIXME: Do this per line
@@ -155,11 +184,9 @@ bool decrypt(const char ciphertext[], const char crib[])
 	char ciphercpy[MAX_CHARS];						// non const version of ciphertxt for pointer references.
 	strcpy(ciphercpy, ciphertext);
 	
-	
 	for (int i = 0; i < matches.Length; i++)
 	{	// Try all possible matches
 
-		int matchWords[MAX_CHARS / 2];				// Holds starting indexes for words in specific match
 		int wordNumber = matches.Values[i];			// word# for first matching word
 		int matchStartIndex = cipherForm.Words[wordNumber].Loc;
 		int matchEndIndex = cipherForm.Words[wordNumber + words - 1].Loc +
@@ -171,12 +198,9 @@ bool decrypt(const char ciphertext[], const char crib[])
 
 		char cipherMatchContinuous[MAX_CHARS] = {};
 		combineWords(cipherMatch, cipherMatchContinuous);
-		
-		for (int j = 0; j < words; j++)
-		{
-			matchWords[j] = cipherForm.Words[j + wordNumber].Loc;
-		}
-		//findKey(words, matchWords, cribWords, ciphertext, crib);		// FIXME: make key function
+		cout << "Ciph: " << cipherMatchContinuous << endl;
+
+		findKey(cribcontinuous,cipherMatchContinuous);		// FIXME: make key function
 		
 	}
 
@@ -193,21 +217,22 @@ int main()
 	*/
 	SentenceForm form = findForm("123!@cow ea8ts --assgrass");
 	SentenceForm formciph = findForm("aba fd sa ifdsaaaa ay aysaufd fd  ifd 87 aa!bb!)hbbsasdd33j");
-	cout << "crib" << endl;
+	//cout << "crib" << endl;
 	for (int i = 0; i < form.Length; i++)
 	{
-		cout << form.Words[i].Length << endl;
+		//cout << form.Words[i].Length << endl;
 	}
-	cout << "ciph" << endl;
+	//cout << "ciph" << endl;
 	for (int i = 0; i < formciph.Length; i++)
 	{
-		cout << formciph.Words[i].Length << endl;
+		//cout << formciph.Words[i].Length << endl;
 	}
 	IntVector matches = formMatch(formciph, form);
 	for (int i = 0; i < matches.Length; i++)
 	{
-		cout << "Match at word: ";
-		cout << matches.Values[i] << endl;
+		//cout << "Match at word: ";
+		//cout << matches.Values[i] << endl;
 	}
-	decrypt("aba fd sa ifdsaaaa ay aysaufd fd  ifd 87 aa!bb!)hbbsasdd33j", "123!@cow ea8ts --assgrass");
+	//decrypt("aba fd sa ifdsaaaa ay aysaufd fd  ifd 87 aa!bb!)hbbsasdd33j", "123!@cow ea8ts --assgrass");
+	decrypt("F gspt fe!zyxZYXzyx--Abca abCa    bdefg## $$dsptrqtj6437 wvuWVUwvu","   hush???hUSh---     --- until    NovemBER !!  ");
 }
