@@ -109,8 +109,6 @@ bool findKey(char cribstring[], char cipherstring[], char original[], char key[]
 		if (strchr(original, cribstring[i]) == NULL && strchr(key, cipherstring[i]) == NULL)
 		{	// input original letters at their corresponding index, and key letters at same index, we now have a mapping.
 			int index = cipherstring[i] - 'a';
-			int test = 'a' - 'a';
-			int test2 = 'z' - 'a';
 			original[index] = cribstring[i];
 			key[index] = cipherstring[i];
 			count++;
