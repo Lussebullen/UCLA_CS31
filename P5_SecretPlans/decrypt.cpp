@@ -122,11 +122,9 @@ bool findKey(char cribstring[], char cipherstring[], char original[], char key[]
 	for (int i = 0; i < n; i++)
 	{
 		if (strchr(original, cribstring[i]) == NULL && strchr(key, cipherstring[i]) == NULL)
-		{
-			original[count] = cribstring[i];
-			original[count + 1] = '\0';
-			key[count] = cipherstring[i];
-			key[count + 1] = '\0';
+		{	// input original letters at their corresponding index, and key letters at same index, we now have a mapping.
+			original[cipherstring[i] - 'a'] = cribstring[i];
+			key[cipherstring[i] - 'a'] = cipherstring[i];
 			count++;
 		}
 		else if (strchr(original, cribstring[i]) != NULL && strchr(key, cipherstring[i]) != NULL)
@@ -204,19 +202,25 @@ bool decrypt(const char ciphertext[], const char crib[])
 		cout << "Ciph: " << cipherMatchContinuous << endl;
 
 		//Check for whether decryption possible
-		char original[25] = {};
-		char key[25] = {};
+		char original[26];
+		char key[26];
+		original[25] = '\0';
+		key[25] = '\0';
 		bool decrypted = findKey(cribcontinuous,cipherMatchContinuous, original, key);
 		cout << "Decrypted: " << decrypted << endl;
 		cout << "Val: " << original << endl;
 		cout << "Key: " << key << endl;
 		if (decrypted)
 		{
-			for (int i = 0; i < strlen(original); i++)
+			for (int i = 0; i < strlen(ciphercpy); i++)
 			{
-
+				if (isalpha(ciphercpy[i]) && strchr(key, ciphercpy[i]) != NULL)
+				{
+					ciphercpy[i] = toupper(original[ciphercpy[i] - 'a']);
+				}
 			}
-			cout << endl;
+			cout << ciphertext << endl;
+			cout << ciphercpy << endl;
 			return true;
 		}
 		
@@ -252,5 +256,5 @@ int main()
 		//cout << matches.Values[i] << endl;
 	}
 	//decrypt("aba fd sa ifdsaaaa ay aysaufd fd  ifd 87 aa!bb!)hbbsasdd33j", "123!@cow ea8ts --assgrass");
-	decrypt("F gspt fe!zyxZYXzyx--Abca abCa    bdefg## $$dsptrqtj6437 wvuWVUwvu","   hush???hUSh---     --- until    NovemBER !!  ");
+	decrypt("F gspt fe! zyxZYXzyx--Abca abCa    bdefg## $$dsptrqtj6437 wvuWVUwvu","   hush???hUSh---     --- until    NovemBER !!  ");
 }
