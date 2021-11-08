@@ -106,7 +106,7 @@ IntVector formMatch(SentenceForm cipherForm, SentenceForm cribForm)
 	}
 	return matches;
 }
-bool findKey(char cribstring[], char cipherstring[])
+bool findKey(char cribstring[], char cipherstring[], char original[], char key[])
 {	// FIXME: Doesnt handle different case, i.e. a/A
 	int n = strlen(cribstring);
 
@@ -117,8 +117,7 @@ bool findKey(char cribstring[], char cipherstring[])
 	}
 
 	// Arrays to hold original and key letter pairs
-	char original[MAX_CHARS] = {};
-	char key[MAX_CHARS] = {};
+	
 	int count = 0;
 	for (int i = 0; i < n; i++)
 	{
@@ -136,14 +135,9 @@ bool findKey(char cribstring[], char cipherstring[])
 		}
 		else
 		{
-			cout << "No key" << endl;
 			return false;
 		}
 	}
-	cout << "Key:" << endl;
-	cout << original << endl;
-	cout << key << endl;
-
 	return true; //FIXME
 }
 
@@ -169,10 +163,15 @@ void combineWords(const char sentence[], char target[])
 bool decrypt(const char ciphertext[], const char crib[])
 {
 	// FIXME: Include error handling
+	
 	SentenceForm cribForm = findForm(crib);
 	
 	char cribcontinuous[MAX_CHARS];					//only letters in string after calling combineWords				
 	combineWords(crib, cribcontinuous);	
+	for (int i = 0; i < strlen(cribcontinuous); i++)
+	{	// Turn lower case
+		cribcontinuous[i] = tolower(cribcontinuous[i]);
+	}
 	cout << "Crib: " << cribcontinuous << endl;
 	SentenceForm cipherForm;
 	
@@ -181,9 +180,13 @@ bool decrypt(const char ciphertext[], const char crib[])
 	int words = cribForm.Length;					// # of words in crib to check	
 	IntVector matches = formMatch(cipherForm, cribForm);
 
-	char ciphercpy[MAX_CHARS];						// non const version of ciphertxt for pointer references.
+	char ciphercpy[MAX_CHARS];						// non const version of ciphertxt for pointer references, turn lower case.
 	strcpy(ciphercpy, ciphertext);
-	
+	for (int i = 0; i < strlen(ciphercpy); i++)
+	{
+		ciphercpy[i] = tolower(ciphercpy[i]);
+	}
+
 	for (int i = 0; i < matches.Length; i++)
 	{	// Try all possible matches
 
@@ -200,7 +203,22 @@ bool decrypt(const char ciphertext[], const char crib[])
 		combineWords(cipherMatch, cipherMatchContinuous);
 		cout << "Ciph: " << cipherMatchContinuous << endl;
 
-		findKey(cribcontinuous,cipherMatchContinuous);		// FIXME: make key function
+		//Check for whether decryption possible
+		char original[25] = {};
+		char key[25] = {};
+		bool decrypted = findKey(cribcontinuous,cipherMatchContinuous, original, key);
+		cout << "Decrypted: " << decrypted << endl;
+		cout << "Val: " << original << endl;
+		cout << "Key: " << key << endl;
+		if (decrypted)
+		{
+			for (int i = 0; i < strlen(original); i++)
+			{
+
+			}
+			cout << endl;
+			return true;
+		}
 		
 	}
 
