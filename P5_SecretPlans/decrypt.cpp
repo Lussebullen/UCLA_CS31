@@ -5,7 +5,9 @@
 #include<cctype>
 using namespace std;
 
-const int MAX_CHARS = 90;
+const int MAX_CHARS = 90;			// Max amount of chars in a line
+const int MAXSIZE = 90 * 71 + 1;	// Max amount of input characters including '\0'
+
 /*
 void runtest(const char ciphertext[], const char crib[])
 {
@@ -39,22 +41,22 @@ SentenceForm findForm(const char sentence[])
 	int i = 0;
 	int count = 0;
 	int wordCount = 0;
-	Word forms[MAX_CHARS / 2];			//Contains each word
+	Word forms[MAX_CHARS / 2];									// Contains each word
 	while (i < n)
 	{
-		while (sentence[i] != '\0' && !isalpha(sentence[i]))	//Pass all non alphabetical characters
+		while (sentence[i] != '\0' && !isalpha(sentence[i]))	// Pass all non alphabetical characters
 		{
 			i++;
 		}
 		Word tmpWord;
 		tmpWord.Loc = i;
 		count = 0;
-		while (sentence[i] != '\0' && isalpha(sentence[i]))	//Count consecutive alphabetical characters
+		while (sentence[i] != '\0' && isalpha(sentence[i]))		// Count consecutive alphabetical characters
 		{
 			count++;
 			i++;
 		}
-		if (count > 0)
+		if (count > 0)											// Add the word to the array
 		{
 			tmpWord.Length = count;
 			forms[wordCount] = tmpWord;
@@ -62,7 +64,7 @@ SentenceForm findForm(const char sentence[])
 		}
 		
 	}
-	SentenceForm result;				//Contains array of words, and amount of words.
+	SentenceForm result;										// Contains array of words, and amount of words.
 	result.Length = wordCount;
 	for (int i = 0; i < wordCount; i++)
 	{
@@ -107,7 +109,7 @@ IntVector formMatch(SentenceForm cipherForm, SentenceForm cribForm)
 	return matches;
 }
 bool findKey(char cribstring[], char cipherstring[], char original[], char key[])
-{	// FIXME: Doesnt handle different case, i.e. a/A
+{	
 	int n = strlen(cribstring);
 
 	for (int i = 0; i < n; i++)
@@ -115,8 +117,6 @@ bool findKey(char cribstring[], char cipherstring[], char original[], char key[]
 		cribstring[i] = tolower(cribstring[i]);
 		cipherstring[i] = tolower(cipherstring[i]);
 	}
-
-	// Arrays to hold original and key letter pairs
 	
 	int count = 0;
 	for (int i = 0; i < n; i++)
@@ -158,37 +158,41 @@ void combineWords(const char sentence[], char target[])
 	strcpy(target, continuous);
 }
 
+bool lineMatch(char cribcontinuous[], char cipherline[])
+{
+
+}
+
 bool decrypt(const char ciphertext[], const char crib[])
 {
 	// FIXME: Include error handling
 	
 	SentenceForm cribForm = findForm(crib);
 	
-	char cribcontinuous[MAX_CHARS];					//only letters in string after calling combineWords				
+	char cribcontinuous[MAX_CHARS];						//only letters in string after calling combineWords				
 	combineWords(crib, cribcontinuous);	
-	for (int i = 0; i < strlen(cribcontinuous); i++)
-	{	// Turn lower case
+	for (int i = 0; i < strlen(cribcontinuous); i++)	// Turn lower case
+	{	
 		cribcontinuous[i] = tolower(cribcontinuous[i]);
 	}
-	cout << "Crib: " << cribcontinuous << endl;
+
 	SentenceForm cipherForm;
+	cipherForm = findForm(ciphertext);					//FIXME: Do this per line
 	
-	cipherForm = findForm(ciphertext);				//FIXME: Do this per line
-	
-	int words = cribForm.Length;					// # of words in crib to check	
+	int words = cribForm.Length;						// # of words in crib to check	
 	IntVector matches = formMatch(cipherForm, cribForm);
 
-	char ciphercpy[MAX_CHARS];						// non const version of ciphertxt for pointer references, turn lower case.
+	char ciphercpy[MAX_CHARS];							// non const version of ciphertxt for pointer references
 	strcpy(ciphercpy, ciphertext);
-	for (int i = 0; i < strlen(ciphercpy); i++)
+	for (int i = 0; i < strlen(ciphercpy); i++)			// Turn lower case
 	{
 		ciphercpy[i] = tolower(ciphercpy[i]);
 	}
 
-	for (int i = 0; i < matches.Length; i++)
-	{	// Try all possible matches
+	for (int i = 0; i < matches.Length; i++)			// Try all possible matches
+	{	
 
-		int wordNumber = matches.Values[i];			// word# for first matching word
+		int wordNumber = matches.Values[i];				// word# for first matching word
 		int matchStartIndex = cipherForm.Words[wordNumber].Loc;
 		int matchEndIndex = cipherForm.Words[wordNumber + words - 1].Loc +
 			cipherForm.Words[wordNumber + words - 1].Length;
@@ -201,7 +205,8 @@ bool decrypt(const char ciphertext[], const char crib[])
 		combineWords(cipherMatch, cipherMatchContinuous);
 		cout << "Ciph: " << cipherMatchContinuous << endl;
 
-		//Check for whether decryption possible
+		// Check for whether decryption possible
+		// Arrays to hold original and key letter pairs
 		char original[26];
 		char key[26];
 		original[25] = '\0';
@@ -219,14 +224,13 @@ bool decrypt(const char ciphertext[], const char crib[])
 					ciphercpy[i] = toupper(original[ciphercpy[i] - 'a']);
 				}
 			}
-			cout << ciphertext << endl;
 			cout << ciphercpy << endl;
 			return true;
 		}
 		
 	}
 
-	return true; //FIXME
+	return false;
 }
 
 int main()
