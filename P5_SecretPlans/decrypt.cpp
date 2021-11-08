@@ -118,22 +118,19 @@ bool findKey(int n, int matchWords[], int cribWords[], const char ciphertext[], 
 	return true; //FIXME
 }
 
-void combineWords(SentenceForm form, const char sentence[], char target[])
+void combineWords(const char sentence[], char target[])
 {	// Combines the sentence form from sentence into a single word, and copies it to target.
-	int n = form.Length;				// # of words
-
+	int n = strlen(sentence);
 	char continuous[MAX_CHARS];			//only letters in string
 	int count = 0;
+
 	for (int i = 0; i < n; i++)
 	{
-		int j = 0;
-		while (form.Words[i].Loc + j < MAX_CHARS && isalpha(sentence[form.Words[i].Loc + j]))
+		if (isalpha(sentence[i]))
 		{
-			continuous[count] = sentence[form.Words[i].Loc + j];
+			continuous[count] = sentence[i];
 			count++;
-			j++;
 		}
-		j = 0;
 	}
 	continuous[count] = '\0';
 
@@ -144,25 +141,37 @@ bool decrypt(const char ciphertext[], const char crib[])
 {
 	// FIXME: Include error handling
 	SentenceForm cribForm = findForm(crib);
+	
+	char cribcontinuous[MAX_CHARS];					//only letters in string after calling combineWords				
+	combineWords(crib, cribcontinuous);	
+
 	SentenceForm cipherForm;
 	
-	cipherForm = findForm(ciphertext);	//FIXME: Do this per line
+	cipherForm = findForm(ciphertext);				//FIXME: Do this per line
+	
+	int words = cribForm.Length;					// # of words in crib to check	
 	IntVector matches = formMatch(cipherForm, cribForm);
 
-	char ciphercpy[MAX_CHARS];
+	char ciphercpy[MAX_CHARS];						// non const version of ciphertxt for pointer references.
 	strcpy(ciphercpy, ciphertext);
-	char cribcpy[MAX_CHARS];
-	strcpy(cribcpy, crib);
-	char cribcontinuous[MAX_CHARS];		//only letters in string
-	int words = cribForm.Length;		// # of words in crib to check
-
-	combineWords(cribForm, crib, cribcontinuous);
-	cout << cribcontinuous << endl;
+	
 	
 	for (int i = 0; i < matches.Length; i++)
 	{	// Try all possible matches
+
 		int matchWords[MAX_CHARS / 2];				// Holds starting indexes for words in specific match
 		int wordNumber = matches.Values[i];			// word# for first matching word
+		int matchStartIndex = cipherForm.Words[wordNumber].Loc;
+		int matchEndIndex = cipherForm.Words[wordNumber + words - 1].Loc +
+			cipherForm.Words[wordNumber + words - 1].Length;
+
+		char* matchStart = &ciphercpy[matchStartIndex];					// Pointer to start of where string matches
+		char cipherMatch[MAX_CHARS] = {};								// Initialize so concaternate works
+		strncat(cipherMatch,matchStart,matchEndIndex-matchStartIndex);	//copy over the matching portion to a new string.
+
+		char cipherMatchContinuous[MAX_CHARS] = {};
+		combineWords(cipherMatch, cipherMatchContinuous);
+		
 		for (int j = 0; j < words; j++)
 		{
 			matchWords[j] = cipherForm.Words[j + wordNumber].Loc;
