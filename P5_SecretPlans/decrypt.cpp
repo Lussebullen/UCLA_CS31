@@ -6,16 +6,8 @@
 using namespace std;
 
 const int MAX_CHARS = 90;			// Max amount of chars in a line
-const int MAXSIZE = 90 * 71 + 1;	// Max amount of input characters including '\0'
-
-/*
-void runtest(const char ciphertext[], const char crib[])
-{
-	cout << "====== " << crib << endl;
-	bool result = decrypt(ciphertext, crib);
-	cout << "Return value: " << result << endl;
-}
-*/
+const int MAXLINES = 71;
+const int MAXSIZE = MAX_CHARS * MAXLINES + 1;	// Max amount of input characters including '\0'
 
 struct Word
 {
@@ -111,20 +103,16 @@ IntVector formMatch(SentenceForm cipherForm, SentenceForm cribForm)
 bool findKey(char cribstring[], char cipherstring[], char original[], char key[])
 {	
 	int n = strlen(cribstring);
-
-	for (int i = 0; i < n; i++)
-	{	// to lower case
-		cribstring[i] = tolower(cribstring[i]);
-		cipherstring[i] = tolower(cipherstring[i]);
-	}
-	
 	int count = 0;
 	for (int i = 0; i < n; i++)
 	{
 		if (strchr(original, cribstring[i]) == NULL && strchr(key, cipherstring[i]) == NULL)
 		{	// input original letters at their corresponding index, and key letters at same index, we now have a mapping.
-			original[cipherstring[i] - 'a'] = cribstring[i];
-			key[cipherstring[i] - 'a'] = cipherstring[i];
+			int index = cipherstring[i] - 'a';
+			int test = 'a' - 'a';
+			int test2 = 'z' - 'a';
+			original[index] = cribstring[i];
+			key[index] = cipherstring[i];
 			count++;
 		}
 		else if (strchr(original, cribstring[i]) != NULL && strchr(key, cipherstring[i]) != NULL)
@@ -158,9 +146,38 @@ void combineWords(const char sentence[], char target[])
 	strcpy(target, continuous);
 }
 
-bool lineMatch(char cribcontinuous[], char cipherline[])
+bool lineMatch(char cribcontinuous[], SentenceForm cribForm, char cipherline[], char original[], char key[])
 {
+	SentenceForm cipherForm;
+	cipherForm = findForm(cipherline);						//FIXME: Do this per line
 
+	int words = cribForm.Length;							// # of words in crib to check	
+	IntVector matches = formMatch(cipherForm, cribForm);
+
+	for (int i = 0; i < matches.Length; i++)				// Try all possible matches
+	{
+
+		int wordNumber = matches.Values[i];					// word# for first matching word
+		int matchStartIndex = cipherForm.Words[wordNumber].Loc;
+		int matchEndIndex = cipherForm.Words[wordNumber + words - 1].Loc +
+			cipherForm.Words[wordNumber + words - 1].Length;
+
+		char* matchStart = &cipherline[matchStartIndex];					// Pointer to start of where string matches
+		char cipherMatch[MAX_CHARS] = {};									// Initialize so concaternate works
+		strncat(cipherMatch, matchStart, matchEndIndex - matchStartIndex);	//copy over the matching portion to a new string.
+
+		char cipherMatchContinuous[MAX_CHARS] = {};
+		combineWords(cipherMatch, cipherMatchContinuous);
+
+		// Check for whether decryption possible
+		bool decrypted = findKey(cribcontinuous, cipherMatchContinuous, original, key);
+
+		if (decrypted)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 bool decrypt(const char ciphertext[], const char crib[])
@@ -168,54 +185,54 @@ bool decrypt(const char ciphertext[], const char crib[])
 	// FIXME: Include error handling
 	
 	SentenceForm cribForm = findForm(crib);
+	// If no crib, decryption impossible, false returned.
+	if (cribForm.Length == 0)
+	{
+		return false;
+	}
 	
-	char cribcontinuous[MAX_CHARS];						//only letters in string after calling combineWords				
+	// Turn crib words into contiguous string of lower case alphabetical characters
+	char cribcontinuous[MAX_CHARS];							
 	combineWords(crib, cribcontinuous);	
-	for (int i = 0; i < strlen(cribcontinuous); i++)	// Turn lower case
+	for (int i = 0; i < strlen(cribcontinuous); i++)	
 	{	
 		cribcontinuous[i] = tolower(cribcontinuous[i]);
 	}
 
-	SentenceForm cipherForm;
-	cipherForm = findForm(ciphertext);					//FIXME: Do this per line
-	
-	int words = cribForm.Length;						// # of words in crib to check	
-	IntVector matches = formMatch(cipherForm, cribForm);
-
-	char ciphercpy[MAX_CHARS];							// non const version of ciphertxt for pointer references
+	// non const lower case version of ciphertext for pointer references
+	char ciphercpy[MAXSIZE];							
 	strcpy(ciphercpy, ciphertext);
-	for (int i = 0; i < strlen(ciphercpy); i++)			// Turn lower case
+	for (int i = 0; i < strlen(ciphercpy); i++)			
 	{
 		ciphercpy[i] = tolower(ciphercpy[i]);
 	}
 
-	for (int i = 0; i < matches.Length; i++)			// Try all possible matches
-	{	
+	// Loop all lines in ciphertext
+	int startIndex = 0;
+	int endIndex = 0;
+	int j = 0;
+	for (int _ = 0; _ < MAXLINES; _++)
+	{
+		while (ciphertext[j] != '\0' && ciphertext[j] != '\n')
+		{
+			endIndex++;
+			j++;
+		}
+		// Construct cipherline
+		char cipherline[MAX_CHARS + 1];
+		char* ptr = &ciphercpy[startIndex];
+		strncpy(cipherline, ptr, endIndex - startIndex);
+		cipherline[endIndex - startIndex] = '\0';
 
-		int wordNumber = matches.Values[i];				// word# for first matching word
-		int matchStartIndex = cipherForm.Words[wordNumber].Loc;
-		int matchEndIndex = cipherForm.Words[wordNumber + words - 1].Loc +
-			cipherForm.Words[wordNumber + words - 1].Length;
+		// Check if cipherline can be decrypted with crib, if so return true
+		
+		// Arrays to hold original and key letter pairs, initialize with specific values to avoid undefined behaviour.
+		char original[27] = "00000000000000000000000000";
+		char key[27] = "00000000000000000000000000";
 
-		char* matchStart = &ciphercpy[matchStartIndex];					// Pointer to start of where string matches
-		char cipherMatch[MAX_CHARS] = {};								// Initialize so concaternate works
-		strncat(cipherMatch,matchStart,matchEndIndex-matchStartIndex);	//copy over the matching portion to a new string.
-
-		char cipherMatchContinuous[MAX_CHARS] = {};
-		combineWords(cipherMatch, cipherMatchContinuous);
-		cout << "Ciph: " << cipherMatchContinuous << endl;
-
-		// Check for whether decryption possible
-		// Arrays to hold original and key letter pairs
-		char original[26];
-		char key[26];
-		original[25] = '\0';
-		key[25] = '\0';
-		bool decrypted = findKey(cribcontinuous,cipherMatchContinuous, original, key);
-		cout << "Decrypted: " << decrypted << endl;
-		cout << "Val: " << original << endl;
-		cout << "Key: " << key << endl;
-		if (decrypted)
+		bool decrypt = lineMatch(cribcontinuous, cribForm, cipherline, original, key);
+		// If decryption possible replace letters using keypairs.
+		if (decrypt)
 		{
 			for (int i = 0; i < strlen(ciphercpy); i++)
 			{
@@ -224,41 +241,49 @@ bool decrypt(const char ciphertext[], const char crib[])
 					ciphercpy[i] = toupper(original[ciphercpy[i] - 'a']);
 				}
 			}
+			// Remove possible obsolete newline //FIXME - is this necessary, inconsistent example
+			if (ciphercpy[strlen(ciphercpy) - 1] == '\n')
+			{
+				ciphercpy[strlen(ciphercpy) - 1] = '\0';
+			}
 			cout << ciphercpy << endl;
 			return true;
 		}
-		
-	}
 
+		if (ciphertext[j] == '\0')
+		{
+			break;
+		}
+		j++;
+		startIndex = j;
+		endIndex = startIndex;
+	}
+	
+	// If no line could be decrypted return false
 	return false;
+}
+
+void runtest(const char ciphertext[], const char crib[])
+{
+	cout << "====== " << crib << endl;
+	bool result = decrypt(ciphertext, crib);
+	cout << "Return value: " << result << endl << endl;
 }
 
 int main()
 {
-	/*
 	cout.setf(ios::boolalpha); // output bools as "true"/"false"
 
 	runtest("Hirdd ejsy zu drvtry od.\nO'z fodvtrry.\n", "my secret");
 	runtest("Hirdd ejsy zu drvtry od.\nO'z fodvtrry.\n", "shadow");
-	*/
-	SentenceForm form = findForm("123!@cow ea8ts --assgrass");
-	SentenceForm formciph = findForm("aba fd sa ifdsaaaa ay aysaufd fd  ifd 87 aa!bb!)hbbsasdd33j");
-	//cout << "crib" << endl;
-	for (int i = 0; i < form.Length; i++)
-	{
-		//cout << form.Words[i].Length << endl;
-	}
-	//cout << "ciph" << endl;
-	for (int i = 0; i < formciph.Length; i++)
-	{
-		//cout << formciph.Words[i].Length << endl;
-	}
-	IntVector matches = formMatch(formciph, form);
-	for (int i = 0; i < matches.Length; i++)
-	{
-		//cout << "Match at word: ";
-		//cout << matches.Values[i] << endl;
-	}
-	//decrypt("aba fd sa ifdsaaaa ay aysaufd fd  ifd 87 aa!bb!)hbbsasdd33j", "123!@cow ea8ts --assgrass");
-	decrypt("F gspt fe! zyxZYXzyx--Abca abCa    bdefg## $$dsptrqtj6437 wvuWVUwvu","   hush???hUSh---     --- until    NovemBER !!  ");
+	runtest("Rswjo qgx Tmeuo sgjsy jds vqgf vo jds vqzf xbby.\nUdbyjo iqcju cg wybgj cg jds esjqiqo zqy\nXbg'j rsj jds jsrrsy jycn jds ucrsgj qrqyt.\nZU 31 cu zdqrrsgecge!","silent alarm");
+	runtest(" a ", "    0L");
+	runtest(" a ", "    0");   // degenerate case
+	runtest("", "");	// Gives false as intended
+	runtest("", "a");	// -||-
+	runtest("a", "");	// degenerate case
+	runtest("F gspt fe! zyxZYXzyx--Abca abCa    bdefg## $$dsptrqtj6437 wvuWVUwvu", "   hush???hUSh---     --- until    NovemBER !!  ");
+	runtest("F gspt fe! zyxZYXzyx--Abca abCa    bdefg## $$dsptrqtj6437 wvuWVUwvu", "hush-hush until November 25, 2021");
+	runtest("F gspt fe! zyxZYXzyx--Abca abCa    bdefg## $$dsptrqtj6437 wvuWVUwvu", "hush hush until november");
+	// ASK ABOUT FINAL NEWLINE HANDLING
 }
