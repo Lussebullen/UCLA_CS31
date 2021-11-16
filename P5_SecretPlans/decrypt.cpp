@@ -147,7 +147,7 @@ void combineWords(const char sentence[], char target[])
 bool lineMatch(char cribcontinuous[], SentenceForm cribForm, char cipherline[], char original[], char key[])
 {
 	SentenceForm cipherForm;
-	cipherForm = findForm(cipherline);						//FIXME: Do this per line
+	cipherForm = findForm(cipherline);						
 
 	int words = cribForm.Length;							// # of words in crib to check	
 	IntVector matches = formMatch(cipherForm, cribForm);
@@ -179,9 +179,7 @@ bool lineMatch(char cribcontinuous[], SentenceForm cribForm, char cipherline[], 
 }
 
 bool decrypt(const char ciphertext[], const char crib[])
-{
-	// FIXME: Include error handling
-	
+{	
 	SentenceForm cribForm = findForm(crib);
 	// If no crib, decryption impossible, false returned.
 	if (cribForm.Length == 0)
@@ -192,6 +190,10 @@ bool decrypt(const char ciphertext[], const char crib[])
 	// Turn crib words into contiguous string of lower case alphabetical characters
 	char cribcontinuous[MAX_CHARS];							
 	combineWords(crib, cribcontinuous);	
+	if (strlen(cribcontinuous) > 90)
+	{
+		return false;
+	}
 	for (int i = 0; i < strlen(cribcontinuous); i++)	
 	{	
 		cribcontinuous[i] = tolower(cribcontinuous[i]);
@@ -239,7 +241,7 @@ bool decrypt(const char ciphertext[], const char crib[])
 					ciphercpy[i] = toupper(original[ciphercpy[i] - 'a']);
 				}
 			}
-			// Remove possible obsolete newline //FIXME - is this necessary, inconsistent example
+			// Remove possible final newline, since this was ambiguous and my code works I will keep it.
 			if (ciphercpy[strlen(ciphercpy) - 1] == '\n')
 			{
 				ciphercpy[strlen(ciphercpy) - 1] = '\0';
@@ -272,16 +274,19 @@ int main()
 {
 	cout.setf(ios::boolalpha); // output bools as "true"/"false"
 
-	runtest("Hirdd ejsy zu drvtry od.\nO'z fodvtrry.\n", "my secret");
-	runtest("Hirdd ejsy zu drvtry od.\nO'z fodvtrry.\n", "shadow");
-	runtest("Rswjo qgx Tmeuo sgjsy jds vqgf vo jds vqzf xbby.\nUdbyjo iqcju cg wybgj cg jds esjqiqo zqy\nXbg'j rsj jds jsrrsy jycn jds ucrsgj qrqyt.\nZU 31 cu zdqrrsgecge!","silent alarm");
-	runtest(" a ", "    0L");
+	runtest("Hirdd ejsy zu drvtry od.\nO'z fodvtrry.\n", "my secret"); //valid example
+	runtest("Hirdd ejsy zu drvtry od.\nO'z fodvtrry.\n", "shadow");		// cannot be decrypted
+	runtest("Rswjo qgx Tmeuo sgjsy jds vqgf vo jds vqzf xbby.\nUdbyjo iqcju cg wybgj cg jds esjqiqo zqy\nXbg'j rsj jds jsrrsy jycn jds ucrsgj qrqyt.\nZU 31 cu zdqrrsgecge!","silent alarm");   // valid example
+	runtest(" a ", "    0L"); // valid example
 	runtest(" a ", "    0");   // degenerate case
 	runtest("", "");	// Gives false as intended
 	runtest("", "a");	// -||-
 	runtest("a", "");	// degenerate case
-	runtest("F gspt fe! zyxZYXzyx--Abca abCa    bdefg## $$dsptrqtj6437 wvuWVUwvu", "   hush???hUSh---     --- until    NovemBER !!  ");
-	runtest("F gspt fe! zyxZYXzyx--Abca abCa    bdefg## $$dsptrqtj6437 wvuWVUwvu", "hush-hush until November 25, 2021");
-	runtest("F gspt fe! zyxZYXzyx--Abca abCa    bdefg## $$dsptrqtj6437 wvuWVUwvu", "hush hush until november");
-	// ASK ABOUT FINAL NEWLINE HANDLING
+	runtest("F gspt fe! zyxZYXzyx--Abca abCa    bdefg## $$dsptrqtj6437 wvuWVUwvu", "   hush???hUSh---     --- until    NovemBER !!  ");	//valid example
+	runtest("F gspt fe! zyxZYXzyx--Abca abCa    bdefg## $$dsptrqtj6437 wvuWVUwvu", "hush-hush until November 25, 2021");	//same example, different crib structure
+	runtest("F gspt fe! zyxZYXzyx--Abca abCa    bdefg## $$dsptrqtj6437 wvuWVUwvu", "hush hush until november");			// same example, different crib structure
+	runtest("ab  cde ? fg", "xy???????zwu 3 pq+.100-");	// Valid example
+	runtest("ab  cde ? fg", "xy???????zwu3pq+.100-?????????????????????????????????????????????????????????????????????????????????"); // crib longer than 90, but valid
+	runtest("ab  cde ? fg", "xy???????zwu3pq+.100-llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll?"); // crib longer than 90, and not valid
+
 }
