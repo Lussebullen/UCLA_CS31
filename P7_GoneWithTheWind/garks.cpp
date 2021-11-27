@@ -172,38 +172,7 @@ void Gark::move()
     // Attempt to move in a random direction; if it can't move, don't move
     int dir = randInt(0, NUMDIRS - 1);  // dir is now UP, DOWN, LEFT, or RIGHT
 
-    if (dir == 0)
-    {
-        if (m_row == 0)
-        {
-            return;
-        }
-        m_row--;
-    }
-    else if (dir == 1)
-    {
-        if (m_row == (m_mesa->rows() - 1))
-        {
-            return;
-        }
-        m_row++;
-    }
-    else if (dir == 2)
-    {
-        if (m_col == 0)
-        {
-            return;
-        }
-        m_col--;
-    }
-    else if (dir == 3)
-    {
-        if (m_col == (m_mesa->cols() - 1))
-        {
-            return;
-        }
-        m_col++;
-    }
+    m_mesa->determineNewPosition(m_row, m_col, dir);
 }
 
 bool Gark::getAttacked(int dir)  // return true if dies
@@ -214,37 +183,10 @@ bool Gark::getAttacked(int dir)  // return true if dies
     }
     attacked = true;    //Has now been attacked
 
-    if (dir == 0)
+    bool validMove = m_mesa->determineNewPosition(m_row, m_col, dir);
+    if (!validMove)
     {
-        if (m_row == 0)
-        {
-            return true;
-        }
-        m_row--;
-    }
-    else if (dir == 1)
-    {
-        if (m_row == (m_mesa->rows() - 1))
-        {
-            return true;
-        }
-        m_row++;
-    }
-    else if (dir == 2)
-    {
-        if (m_col == 0)
-        {
-            return true;
-        }
-        m_col--;
-    }
-    else if (dir == 3)
-    {
-        if (m_col == (m_mesa->cols() - 1))
-        {
-            return true;
-        }
-        m_col++;
+        return true;
     }
     return false; 
 }
@@ -296,9 +238,22 @@ void Player::stand()
 void Player::moveOrAttack(int dir)
 {
     m_age++;
-    // TODO:  If there is a gark adjacent to the player in the direction
-    // dir, attack it.  Otherwise, move the player to that position if
-    // possible (i.e., if the move would not be off the edge of the mesa).
+    int r_temp = m_row;
+    int c_temp = m_col;
+    bool validMove = m_mesa->determineNewPosition(r_temp, c_temp, dir);
+    if (!validMove)
+    {
+        return;
+    }
+    if (m_mesa->numGarksAt(r_temp, c_temp) > 0)
+    {
+        m_mesa->attackGarkAt(r_temp, c_temp, dir);
+    }
+    else
+    {
+        m_row = r_temp;
+        m_col = c_temp;
+    }
 }
 
 bool Player::isDead() const
@@ -373,19 +328,35 @@ int Mesa::numGarksAt(int r, int c) const
 
 bool Mesa::determineNewPosition(int& r, int& c, int dir) const
 {
-    // TODO:  If a move from row r, column c, one step in direction dir
-    // would go off the edge of the mesa, leave r and c unchanged and
-    // return false.  Otherwise, set r or c so that row r, column c, is
-    // now the new position resulting from the proposed move, and
-    // return true.
     switch (dir)
     {
-        // TODO:  Implement the behavior if dir is UP.
+    case UP:
+        if (r == 0)
+        {
+            return false;
+        }
+        r--;
         break;
     case DOWN:
+        if (r == m_rows - 1)
+        {
+            return false;
+        }
+        r++;
+        break;
     case LEFT:
+        if (c == 0)
+        {
+            return false;
+        }
+        c--;
+        break;
     case RIGHT:
-        // TODO:  Implement the other directions.
+        if (c == m_cols - 1)
+        {
+            return false;
+        }
+        c++;
         break;
     default:
         return false;
@@ -410,7 +381,7 @@ void Mesa::display() const
     { 
         for (c = 0; c < cols(); c++)
         {
-            int count = numGarksAt(r + 1, c + 1); //Display and grid coordinates are different
+            int count = numGarksAt(r, c); //Display and grid coordinates are different
             if (count == 1)
             {
                 grid[r][c] = 'G';
@@ -432,7 +403,7 @@ void Mesa::display() const
     {
         // Set the char to '@', unless there's also a gark there,
         // in which case set it to '*'.
-        char& gridChar = grid[m_player->row() - 1][m_player->col() - 1];
+        char& gridChar = grid[m_player->row()][m_player->col()];
         if (gridChar == '.')
             gridChar = '@';
         else
@@ -534,6 +505,11 @@ bool Mesa::moveGarks()
         // TODO:  Have the k-th gark on the mesa make one move.
         //        If that move results in that gark being in the same
         //        position as the player, the player dies.
+        m_garks[k]->move();
+        if (m_garks[k]->col() == m_player->col() && m_garks[k]->row() == m_player->row())
+        {
+            m_player->setDead();
+        }
     }
 
     // return true if the player is still alive, false otherwise
@@ -660,7 +636,7 @@ int main()
 {
     // Create a game
     // Use this instead to create a mini-game:   Game g(3, 4, 2);
-    Game g(7, 8, 25);
+    Game g(7, 8, 5);
 
     // Play the game
     g.play();
