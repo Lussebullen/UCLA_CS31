@@ -109,7 +109,7 @@ private:
     int     m_rows;
     int     m_cols;
     Player* m_player;
-    Gark* m_garks[MAXGARKS];
+    Gark*   m_garks[MAXGARKS];
     int     m_nGarks;
 };
 
@@ -172,18 +172,81 @@ void Gark::move()
     // Attempt to move in a random direction; if it can't move, don't move
     int dir = randInt(0, NUMDIRS - 1);  // dir is now UP, DOWN, LEFT, or RIGHT
 
-      // TODO:  Attempt to move in direction dir; if it can't move, don't move.
+    if (dir == 0)
+    {
+        if (m_row == 0)
+        {
+            return;
+        }
+        m_row--;
+    }
+    else if (dir == 1)
+    {
+        if (m_row == (m_mesa->rows() - 1))
+        {
+            return;
+        }
+        m_row++;
+    }
+    else if (dir == 2)
+    {
+        if (m_col == 0)
+        {
+            return;
+        }
+        m_col--;
+    }
+    else if (dir == 3)
+    {
+        if (m_col == (m_mesa->cols() - 1))
+        {
+            return;
+        }
+        m_col++;
+    }
 }
 
 bool Gark::getAttacked(int dir)  // return true if dies
 {
-    // TODO:  If the gark has been attacked once before, return true
-    // (since a second attack kills a gark).  Otherwise, if possible,
-    // move the gark one position in direction dir and return false
-    // (since it survived the attack).  Otherwise, do not move, but return
-    // true (since stepping back causes the gark to die by falling off the
-    // mesa).
-    return false;  // This implementation compiles, but is incorrect.
+    if (attacked)
+    {
+        return true;
+    }
+    attacked = true;    //Has now been attacked
+
+    if (dir == 0)
+    {
+        if (m_row == 0)
+        {
+            return true;
+        }
+        m_row--;
+    }
+    else if (dir == 1)
+    {
+        if (m_row == (m_mesa->rows() - 1))
+        {
+            return true;
+        }
+        m_row++;
+    }
+    else if (dir == 2)
+    {
+        if (m_col == 0)
+        {
+            return true;
+        }
+        m_col--;
+    }
+    else if (dir == 3)
+    {
+        if (m_col == (m_mesa->cols() - 1))
+        {
+            return true;
+        }
+        m_col++;
+    }
+    return false; 
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -439,6 +502,28 @@ bool Mesa::attackGarkAt(int r, int c, int dir)
     // that position.  If the gark does not survive the attack, destroy the
     // gark object, removing it from the mesa, and return true.  Otherwise,
     // return false (no gark at (r,c), or gark didn't die).
+    if (numGarksAt(r, c) == 0)
+    {
+        return false;
+    }
+    Gark* target;
+    for (int i = 0; i < m_nGarks; i++)
+    {
+        if (m_garks[i]->row() == r && m_garks[i]->col() == c)
+        {
+            target = m_garks[i];
+            if (target->getAttacked(dir))
+            {
+                m_garks[i] = m_garks[m_nGarks];
+                m_nGarks--;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
     return false;  // This implementation compiles, but is incorrect.
 }
 
