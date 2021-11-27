@@ -269,7 +269,10 @@ Mesa::Mesa(int nRows, int nCols)
 Mesa::~Mesa()
 {
     delete m_player;
-    // TODO:  Delete the player and all remaining dynamically allocated garks.
+    for (int i = 0; i < m_nGarks; i++)
+    {
+        delete m_garks[i];
+    }
 }
 
 int Mesa::rows() const
@@ -294,8 +297,15 @@ int Mesa::garkCount() const
 
 int Mesa::numGarksAt(int r, int c) const
 {
-    // TODO:  Return the number of garks at row r, column c.
-    return 0;  // This implementation compiles, but is incorrect.
+    int count = 0;
+    for (int i = 0; i < m_nGarks; i++)
+    {
+        if (m_garks[i]->row() == r && m_garks[i]->col() == c)
+        {
+            count++;
+        }
+    }
+    return count;
 }
 
 bool Mesa::determineNewPosition(int& r, int& c, int dir) const
@@ -333,9 +343,26 @@ void Mesa::display() const
             grid[r][c] = '.';
 
     // Indicate each gark's position
-  // TODO:  If one gark is at some grid point, set the char to 'G'.
-  //        If it's 2 though 8, set it to '2' through '8'.
-  //        For 9 or more, set it to '9'.
+    for (r = 0; r < rows(); r++)
+    { 
+        for (c = 0; c < cols(); c++)
+        {
+            int count = numGarksAt(r + 1, c + 1); //Display and grid coordinates are different
+            if (count == 1)
+            {
+                grid[r][c] = 'G';
+            } 
+            else if (count > 1 && count < 9)
+            {
+                grid[r][c] = '0' + count;
+            }
+            else if (count >= 9)
+            {
+                grid[r][c] = '9';
+            }
+        }
+    }
+        
 
     // Indicate player's position
     if (m_player != nullptr)
@@ -384,7 +411,15 @@ bool Mesa::addGark(int r, int c)
     // are added, then some are destroyed, then more are added.
 
     // TODO:  Implement this.
-    return false;  // This implementation compiles, but is incorrect.
+    if (m_nGarks == MAXGARKS)
+    {
+        return false;
+    }
+
+    m_garks[m_nGarks] = new Gark(this, r, c);
+    m_nGarks++;
+
+    return true;  // This implementation compiles, but is incorrect.
 }
 
 bool Mesa::addPlayer(int r, int c)
