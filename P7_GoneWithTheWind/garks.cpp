@@ -241,6 +241,10 @@ void Player::stand()
 
 void Player::moveOrAttack(int dir)
 {
+    if (dir == -1) //Invalid input
+    {
+        return;
+    }
     m_age++;
     int r_temp = m_row;
     int c_temp = m_col;
@@ -638,7 +642,7 @@ int main()
 {
     // Create a game
     // Use this instead to create a mini-game:   Game g(3, 4, 2);
-    Game g(6, 6, 3);
+    Game g(6, 6, 5);
 
     // Play the game
     g.play();
