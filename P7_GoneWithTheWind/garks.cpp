@@ -483,6 +483,7 @@ bool Mesa::attackGarkAt(int r, int c, int dir)
             {
                 if (i == m_nGarks - 1) //Remove last entry
                 {
+                    delete m_garks[m_nGarks - 1];
                     m_nGarks--;
                 }
                 else                   //Point removed entry to last entry
