@@ -183,11 +183,15 @@ bool Gark::getAttacked(int dir)  // return true if dies
     }
     attacked = true;    //Has now been attacked
 
-    bool validMove = m_mesa->determineNewPosition(m_row, m_col, dir);
+    int r_temp = m_row;
+    int c_temp = m_col;
+    bool validMove = m_mesa->determineNewPosition(r_temp, c_temp, dir);
     if (!validMove)
     {
         return true;
     }
+    m_row = r_temp;
+    m_col = c_temp;
     return false; 
 }
 
@@ -473,20 +477,29 @@ bool Mesa::attackGarkAt(int r, int c, int dir)
     // that position.  If the gark does not survive the attack, destroy the
     // gark object, removing it from the mesa, and return true.  Otherwise,
     // return false (no gark at (r,c), or gark didn't die).
+    /*
     if (numGarksAt(r, c) == 0)
     {
         return false;
-    }
+    }*/
     Gark* target;
     for (int i = 0; i < m_nGarks; i++)
     {
         if (m_garks[i]->row() == r && m_garks[i]->col() == c)
         {
             target = m_garks[i];
-            if (target->getAttacked(dir))
+            bool dead = target->getAttacked(dir);
+            if (dead)
             {
-                m_garks[i] = m_garks[m_nGarks];
-                m_nGarks--;
+                if (i == m_nGarks - 1) //Remove last entry
+                {
+                    m_nGarks--;
+                }
+                else                   //Point removed entry to last entry
+                {
+                    m_garks[i] = m_garks[m_nGarks - 1];
+                    m_nGarks--;
+                }
                 return true;
             }
             else
