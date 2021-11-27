@@ -331,28 +331,28 @@ bool Mesa::determineNewPosition(int& r, int& c, int dir) const
     switch (dir)
     {
     case UP:
-        if (r == 0)
+        if (r == 1)
         {
             return false;
         }
         r--;
         break;
     case DOWN:
-        if (r == m_rows - 1)
+        if (r == m_rows)
         {
             return false;
         }
         r++;
         break;
     case LEFT:
-        if (c == 0)
+        if (c == 1)
         {
             return false;
         }
         c--;
         break;
     case RIGHT:
-        if (c == m_cols - 1)
+        if (c == m_cols)
         {
             return false;
         }
@@ -381,7 +381,7 @@ void Mesa::display() const
     { 
         for (c = 0; c < cols(); c++)
         {
-            int count = numGarksAt(r, c); //Display and grid coordinates are different
+            int count = numGarksAt(r + 1, c + 1); //Display and grid coordinates are different
             if (count == 1)
             {
                 grid[r][c] = 'G';
@@ -403,7 +403,7 @@ void Mesa::display() const
     {
         // Set the char to '@', unless there's also a gark there,
         // in which case set it to '*'.
-        char& gridChar = grid[m_player->row()][m_player->col()];
+        char& gridChar = grid[m_player->row() - 1][m_player->col() - 1];
         if (gridChar == '.')
             gridChar = '@';
         else
