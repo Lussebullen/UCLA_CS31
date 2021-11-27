@@ -448,7 +448,6 @@ bool Mesa::addGark(int r, int c)
     // in this scenario (which won't occur in this game):  MAXGARKS
     // are added, then some are destroyed, then more are added.
 
-    // TODO:  Implement this.
     if (m_nGarks == MAXGARKS)
     {
         return false;
@@ -473,15 +472,6 @@ bool Mesa::addPlayer(int r, int c)
 
 bool Mesa::attackGarkAt(int r, int c, int dir)
 {
-    // TODO:  Attack one gark at row r, column c if at least one is at
-    // that position.  If the gark does not survive the attack, destroy the
-    // gark object, removing it from the mesa, and return true.  Otherwise,
-    // return false (no gark at (r,c), or gark didn't die).
-    /*
-    if (numGarksAt(r, c) == 0)
-    {
-        return false;
-    }*/
     Gark* target;
     for (int i = 0; i < m_nGarks; i++)
     {
@@ -497,6 +487,7 @@ bool Mesa::attackGarkAt(int r, int c, int dir)
                 }
                 else                   //Point removed entry to last entry
                 {
+                    delete m_garks[i];
                     m_garks[i] = m_garks[m_nGarks - 1];
                     m_nGarks--;
                 }
@@ -508,16 +499,13 @@ bool Mesa::attackGarkAt(int r, int c, int dir)
             }
         }
     }
-    return false;  // This implementation compiles, but is incorrect.
+    return false;  
 }
 
 bool Mesa::moveGarks()
 {
     for (int k = 0; k < m_nGarks; k++)
     {
-        // TODO:  Have the k-th gark on the mesa make one move.
-        //        If that move results in that gark being in the same
-        //        position as the player, the player dies.
         m_garks[k]->move();
         if (m_garks[k]->col() == m_player->col() && m_garks[k]->row() == m_player->row())
         {
@@ -649,7 +637,7 @@ int main()
 {
     // Create a game
     // Use this instead to create a mini-game:   Game g(3, 4, 2);
-    Game g(7, 8, 5);
+    Game g(6, 6, 3);
 
     // Play the game
     g.play();
