@@ -55,7 +55,7 @@ private:
     Mesa* m_mesa;
     int   m_row;
     int   m_col;
-    bool  attacked;
+    bool  attacked = false;
 };
 
 class Player
@@ -109,7 +109,7 @@ private:
     int     m_rows;
     int     m_cols;
     Player* m_player;
-    Gark*   m_garks[MAXGARKS];
+    Gark*   m_garks[MAXGARKS] = {nullptr};
     int     m_nGarks;
 };
 
